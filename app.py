@@ -8,7 +8,7 @@ html_template = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lucas and Hannah's Rat Sighting Website</title>
+    <title>Rat</title>
     <style>
         body {
             text-align: center;
@@ -31,7 +31,7 @@ html_template = """
     </style>
 </head>
 <body>
-    <h1>Rat</h1>
+    <h1>Lucas and Hannah's Rat Sighting Website</h1>
     <button onclick="location.href='/sighting'">Personal Rat Sighting</button>
     <button onclick="location.href='/report'">Inspection Posts</button>
     <button onclick="location.href='/qa'">Q&A Forum</button>
