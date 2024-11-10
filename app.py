@@ -52,15 +52,19 @@ DB_SERVER = "w4111.cisxo09blonu.us-east-1.rds.amazonaws.com"
 
 DATABASEURI = "postgresql://zz3306:hry2106@w4111.cisxo09blonu.us-east-1.rds.amazonaws.com/w4111"
 
-session = engine.connect(DATABASEURI)
-print("Session created")
-# Here we create a test table and insert some values in it
-session.execute(text("""DROP TABLE IF EXISTS test;"""))
-session.execute(text("""CREATE TABLE IF NOT EXISTS test (
-id serial,
-name text
-);"""))
-session.execute(text("""INSERT INTO test(name) VALUES ('grace hopper'), ('alan turing'), ('ada lovelace');"""))
+engine = create_engine(DATABASEURI)
+
+with engine.connect() as connection:  # "with" ensures the connection is properly closed
+    print("Session created")
+
+    # Execute the SQL commands
+    connection.execute(text("""DROP TABLE IF EXISTS test;"""))
+    connection.execute(text("""CREATE TABLE IF NOT EXISTS test (
+        id serial,
+        name text
+    );"""))
+    connection.execute(text("""INSERT INTO test(name) VALUES
+        ('grace hopper'), ('alan turing'), ('ada lovelace');"""))
 
 @app.before_request
 def before_request():
