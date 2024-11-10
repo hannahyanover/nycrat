@@ -54,6 +54,13 @@ DATABASEURI = "postgresql://zz3306:hry2106@w4111.cisxo09blonu.us-east-1.rds.amaz
 
 engine = create_engine(DATABASEURI)
 
+engine.execute("""DROP TABLE IF EXISTS test;""")
+engine.execute("""CREATE TABLE IF NOT EXISTS test (
+  id serial,
+  name text
+);""")
+engine.execute("""INSERT INTO test(name) VALUES ('grace hopper'), ('alan turing'), ('ada lovelace');""")
+
 @app.before_request
 def before_request():
   """
@@ -99,10 +106,10 @@ def home():
 
 @app.route('/sighting')
 def sighting():
-  cursor = g.conn.execute("SELECT comment FROM personal_rat_sighting")
-  comments = []
+  cursor = g.conn.execute("SELECT name FROM personal_rat_sighting")
+  names = []
   for result in cursor:
-    comments.append(result['comment'])  # can also be accessed using result[0]
+    names.append(result['name'])  # can also be accessed using result[0]
   cursor.close()
 
 @app.route('/report')
