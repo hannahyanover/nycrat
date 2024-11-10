@@ -116,13 +116,15 @@ def home():
 
 @app.route('/sighting')
 def sighting():
-  cursor = g.conn.execute(text("SELECT name FROM test"))
+  cursor = g.conn.execute("SELECT name FROM test")
   names = []
-  for result in cursor.fetchall():  # .fetchall() gets all rows
-    names.append(result['name'])  # result is a Row object, so you can use key access
-  for name in names:
-    print(name)
-  cursor.close()  
+  for result in cursor:
+    names.append(result['name'])  # can also be accessed using result[0]
+  cursor.close()
+  context = dict(data = names)
+  return render_template("index.html", **context)
+
+ 
 
 @app.route('/report')
 def report():
