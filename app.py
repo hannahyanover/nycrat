@@ -108,17 +108,11 @@ def home():
 @app.route('/sighting')
 def sighting():
   engine = create_engine(DATABASEURI)
-
-# Use the engine to establish a connection
-with engine.connect() as connection:  # "with" ensures the connection is properly closed after use
-    result = connection.execute("SELECT name FROM test")
-    names = [row['name'] for row in result]
-    
-# Pass data to your context and render the template
-context = {'data': names}
-return render_template("index.html", **context)
-
- 
+  with engine.connect() as connection:  # "with" ensures the connection is properly closed after use
+  result = connection.execute("SELECT name FROM test")
+  names = [row['name'] for row in result]
+  context = {'data': names}
+  return render_template("index.html", **context)
 
 @app.route('/report')
 def report():
