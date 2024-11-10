@@ -52,13 +52,23 @@ DB_SERVER = "w4111.cisxo09blonu.us-east-1.rds.amazonaws.com"
 
 DATABASEURI = "postgresql://zz3306:hry2106@w4111.cisxo09blonu.us-east-1.rds.amazonaws.com/w4111"
 
-engine = create_engine('your_database_url')
+engine = create_engine(DATABSEURI)
 
-# Get a connection
 with engine.connect() as connection:
-    result = connection.execute("SELECT * FROM your_table")
-    for row in result:
-        print(row)
+    # Drop the table if it exists
+    connection.execute("""DROP TABLE IF EXISTS test;""")
+    
+    # Create the table if it doesn't exist
+    connection.execute("""CREATE TABLE IF NOT EXISTS test (
+        id serial PRIMARY KEY,
+        name text
+    );""")
+    
+    # Insert values into the table
+    connection.execute("""INSERT INTO test(name) VALUES 
+        ('grace hopper'), 
+        ('alan turing'), 
+        ('ada lovelace');""")
 
 @app.before_request
 def before_request():
