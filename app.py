@@ -56,19 +56,19 @@ engine = create_engine(DATABASEURI)
 
 with engine.connect() as conn:
     # Drop the table if it exists
-    conn.execute("""DROP TABLE IF EXISTS test;""")
+    conn.execute(text("""DROP TABLE IF EXISTS test;"""))
     
     # Create the table if it doesn't exist
-    conn.execute("""CREATE TABLE IF NOT EXISTS test (
+    conn.execute(text("""CREATE TABLE IF NOT EXISTS test (
         id serial PRIMARY KEY,
         name text
-    );""")
+    );"""))
     
     # Insert some records into the table
-    conn.execute("""INSERT INTO test(name) VALUES
-                    ('grace hopper'), 
-                    ('alan turing'), 
-                    ('ada lovelace');""")
+    conn.execute(text("""INSERT INTO test(name) VALUES
+                        ('grace hopper'), 
+                        ('alan turing'), 
+                        ('ada lovelace');"""))
 
 @app.before_request
 def before_request():
