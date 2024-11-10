@@ -69,6 +69,7 @@ with engine.connect() as conn:
                         ('grace hopper'), 
                         ('alan turing'), 
                         ('ada lovelace');"""))
+    conn.commit()
 
 @app.before_request
 def before_request():
