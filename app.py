@@ -52,6 +52,8 @@ DB_SERVER = "w4111.cisxo09blonu.us-east-1.rds.amazonaws.com"
 
 DATABASEURI = "postgresql://zz3306:hry2106@w4111.cisxo09blonu.us-east-1.rds.amazonaws.com/w4111"
 
+engine = create_engine(DATABASEURI)
+
 @app.before_request
 def before_request():
   """
@@ -82,18 +84,18 @@ def teardown_request(exception):
 
 @app.route('/')
 def home():
-    if not session.get('logged_in'):
-        return render_template('login.html')
-    else:
+    # if not session.get('logged_in'):
+    #     return render_template('login.html')
+    # else:
         return render_template_string(html_template)
 
-@app.route('/login', methods=['POST'])
-def do_admin_login():
-    if request.form['password'] == 'password' and request.form['username'] == 'admin':
-        session['logged_in'] = True
-    else:
-        flash('wrong password!')
-    return home()
+# @app.route('/login', methods=['POST'])
+# def do_admin_login():
+#     if request.form['password'] == 'password' and request.form['username'] == 'admin':
+#         session['logged_in'] = True
+#     else:
+#         flash('wrong password!')
+#     return home()
 
 @app.route('/sighting')
 def sighting():
