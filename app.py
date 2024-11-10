@@ -86,7 +86,7 @@ def home():
 
 @app.route('/sighting')
 def sighting():
-    cursor = g.conn.execute("SELECT comment FROM personal_rat_sighting")
+  cursor = g.conn.execute("SELECT comment FROM personal_rat_sighting")
   comments = []
   for result in cursor:
     comments.append(result['comment'])  # can also be accessed using result[0]
