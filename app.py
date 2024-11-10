@@ -54,12 +54,21 @@ DATABASEURI = "postgresql://zz3306:hry2106@w4111.cisxo09blonu.us-east-1.rds.amaz
 
 engine = create_engine(DATABASEURI)
 
-engine.execute("""DROP TABLE IF EXISTS test;""")
-engine.execute("""CREATE TABLE IF NOT EXISTS test (
-  id serial,
-  name text
-);""")
-engine.execute("""INSERT INTO test(name) VALUES ('grace hopper'), ('alan turing'), ('ada lovelace');""")
+with engine.connect() as conn:
+    # Drop the table if it exists
+    conn.execute("""DROP TABLE IF EXISTS test;""")
+    
+    # Create the table if it doesn't exist
+    conn.execute("""CREATE TABLE IF NOT EXISTS test (
+        id serial PRIMARY KEY,
+        name text
+    );""")
+    
+    # Insert some records into the table
+    conn.execute("""INSERT INTO test(name) VALUES
+                    ('grace hopper'), 
+                    ('alan turing'), 
+                    ('ada lovelace');""")
 
 @app.before_request
 def before_request():
