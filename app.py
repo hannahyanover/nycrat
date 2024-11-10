@@ -1,7 +1,7 @@
 import os
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
-from flask import Flask, request, render_template, g, redirect, Response, jsonify, render_template_string, flash, session, abort 
+from flask import Flask, request, render_template, g, redirect, Response, jsonify, render_template_string, flash, session, abort
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
@@ -52,23 +52,23 @@ DB_SERVER = "w4111.cisxo09blonu.us-east-1.rds.amazonaws.com"
 
 DATABASEURI = "postgresql://zz3306:hry2106@w4111.cisxo09blonu.us-east-1.rds.amazonaws.com/w4111"
 
-engine = create_engine(DATABASEURI)
+# engine = create_engine(DATABASEURI)
 
-with engine.connect() as connection:
-    # Drop the table if it exists
-    connection.execute("""DROP TABLE IF EXISTS test;""")
+# with engine.connect() as connection:
+#     # Drop the table if it exists
+#     connection.execute("""DROP TABLE IF EXISTS test;""")
     
-    # Create the table if it doesn't exist
-    connection.execute("""CREATE TABLE IF NOT EXISTS test (
-        id serial PRIMARY KEY,
-        name text
-    );""")
+#     # Create the table if it doesn't exist
+#     connection.execute("""CREATE TABLE IF NOT EXISTS test (
+#         id serial PRIMARY KEY,
+#         name text
+#     );""")
     
-    # Insert values into the table
-    connection.execute("""INSERT INTO test(name) VALUES 
-        ('grace hopper'), 
-        ('alan turing'), 
-        ('ada lovelace');""")
+#     # Insert values into the table
+#     connection.execute("""INSERT INTO test(name) VALUES 
+#         ('grace hopper'), 
+#         ('alan turing'), 
+#         ('ada lovelace');""")
 
 @app.before_request
 def before_request():
@@ -100,28 +100,29 @@ def teardown_request(exception):
 
 @app.route('/')
 def home():
-    # if not session.get('logged_in'):
-    #     return render_template('login.html')
-    # else:
+    if not session.get('logged_in'):
+        return render_template('login.html')
+    else:
         return render_template_string(html_template)
 
-# @app.route('/login', methods=['POST'])
-# def do_admin_login():
-#     if request.form['password'] == 'password' and request.form['username'] == 'admin':
-#         session['logged_in'] = True
-#     else:
-#         flash('wrong password!')
-#     return home()
+@app.route('/login', methods=['POST'])
+def do_admin_login():
+    if request.form['password'] == 'password' and request.form['username'] == 'admin':
+        session['logged_in'] = True
+    else:
+        flash('wrong password!')
+    return home()
 
 @app.route('/sighting')
 def sighting():
-  cursor = g.conn.execute("SELECT name FROM test")
-  names = []
-  for result in cursor:
-    names.append(result['name'])  # can also be accessed using result[0]
-  cursor.close()
-  context = dict(data = names)
-  return render_template("index.html", **context)
+  # cursor = g.conn.execute("SELECT name FROM test")
+  # names = []
+  # for result in cursor:
+  #   names.append(result['name'])  # can also be accessed using result[0]
+  # cursor.close()
+  # context = dict(data = names)
+  # return render_template("index.html", **context)
+  return "Sighting Posts Page (Coming soon)"
 
  
 
@@ -134,4 +135,5 @@ def qa():
     return "Q&A Forum (Coming soon)"
 
 if __name__ == '__main__':
+    app.secret_key = os.urandom(12)
     app.run(debug=True, host='0.0.0.0', port=5000)
