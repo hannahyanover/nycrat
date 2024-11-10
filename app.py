@@ -114,7 +114,7 @@ def sighting():
   engine = create_engine(DATABASEURI)
   with engine.connect() as connection:  # "with" ensures the connection is properly closed after use
      result = connection.execute((text("SELECT name FROM test")))
-     names = [row['name'] for row in result]
+     names = [row['name'] for row in result.fetchall()]
   context = {'data': names}
   return render_template("index.html", **context)
 
