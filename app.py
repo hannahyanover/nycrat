@@ -115,7 +115,7 @@ def home():
 
 @app.route('/sighting')
 def sighting():
-  cursor = g.conn.execute("SELECT name FROM personal_rat_sighting")
+  cursor = g.conn.execute("SELECT name FROM test")
   names = []
   for result in cursor:
     names.append(result['name'])  # can also be accessed using result[0]
