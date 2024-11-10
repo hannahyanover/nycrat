@@ -1,7 +1,7 @@
 import os
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
-from flask import Flask, request, render_template, g, redirect, Response, jsonify, render_template_string
+from flask import Flask, request, render_template, g, redirect, Response, jsonify, render_template_string, flash, session, abort 
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
@@ -82,7 +82,18 @@ def teardown_request(exception):
 
 @app.route('/')
 def home():
-    return render_template_string(html_template)
+    if not session.get('logged_in'):
+        return render_template('login.html')
+    else:
+        return render_template_string(html_template)
+
+@app.route('/login', methods=['POST'])
+def do_admin_login():
+    if request.form['password'] == 'password' and request.form['username'] == 'admin':
+        session['logged_in'] = True
+    else:
+        flash('wrong password!')
+    return home()
 
 @app.route('/sighting')
 def sighting():
