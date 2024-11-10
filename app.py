@@ -70,48 +70,48 @@ DATABASEURI = "postgresql://zz3306:hry2106@w4111.cisxo09blonu.us-east-1.rds.amaz
 #         ('alan turing'), 
 #         ('ada lovelace');""")
 
-@app.before_request
-def before_request():
-  """
-  This function is run at the beginning of every web request 
-  (every time you enter an address in the web browser).
-  We use it to setup a database connection that can be used throughout the request
+# @app.before_request
+# def before_request():
+#   """
+#   This function is run at the beginning of every web request 
+#   (every time you enter an address in the web browser).
+#   We use it to setup a database connection that can be used throughout the request
 
-  The variable g is globally accessible
-  """
-  try:
-    g.conn = engine.connect()
-  except:
-    print("uh oh, problem connecting to database")
-    import traceback; traceback.print_exc()
-    g.conn = None
+#   The variable g is globally accessible
+#   """
+#   try:
+#     g.conn = engine.connect()
+#   except:
+#     print("uh oh, problem connecting to database")
+#     import traceback; traceback.print_exc()
+#     g.conn = None
 
-@app.teardown_request
-def teardown_request(exception):
-  """
-  At the end of the web request, this makes sure to close the database connection.
-  If you don't the database could run out of memory!
-  """
-  try:
-    g.conn.close()
-  except Exception as e:
-    pass
+# @app.teardown_request
+# def teardown_request(exception):
+#   """
+#   At the end of the web request, this makes sure to close the database connection.
+#   If you don't the database could run out of memory!
+#   """
+#   try:
+#     g.conn.close()
+#   except Exception as e:
+#     pass
 
 
 @app.route('/')
 def home():
-    if not session.get('logged_in'):
-        return render_template('login.html')
-    else:
+    # if not session.get('logged_in'):
+    #     return render_template('login.html')
+    # else:
         return render_template_string(html_template)
 
-@app.route('/login', methods=['POST'])
-def do_admin_login():
-    if request.form['password'] == 'password' and request.form['username'] == 'admin':
-        session['logged_in'] = True
-    else:
-        flash('wrong password!')
-    return home()
+# @app.route('/login', methods=['POST'])
+# def do_admin_login():
+#     if request.form['password'] == 'password' and request.form['username'] == 'admin':
+#         session['logged_in'] = True
+#     else:
+#         flash('wrong password!')
+#     return home()
 
 @app.route('/sighting')
 def sighting():
