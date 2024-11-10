@@ -1,3 +1,4 @@
+pip install SQLAlchemy
 import os
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
