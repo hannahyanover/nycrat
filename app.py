@@ -52,7 +52,7 @@ DB_SERVER = "w4111.cisxo09blonu.us-east-1.rds.amazonaws.com"
 
 DATABASEURI = "postgresql://zz3306:hry2106@w4111.cisxo09blonu.us-east-1.rds.amazonaws.com/w4111"
 
-session = engine.connect()
+session = engine.connect(DATABASEURI)
 print("Session created")
 # Here we create a test table and insert some values in it
 session.execute(text("""DROP TABLE IF EXISTS test;"""))
@@ -107,14 +107,16 @@ def home():
 
 @app.route('/sighting')
 def sighting():
-  cursor = g.conn.execute("SELECT name FROM test")
-  names = []
-  for result in cursor:
-    names.append(result['name'])  # can also be accessed using result[0]
-  cursor.close()
-  context = dict(data = names)
-  return render_template("index.html", **context)
-  # return "Sighting Posts Page (Coming soon)"
+  engine = create_engine(DATABASEURI)
+
+# Use the engine to establish a connection
+with engine.connect() as connection:  # "with" ensures the connection is properly closed after use
+    result = connection.execute("SELECT name FROM test")
+    names = [row['name'] for row in result]
+    
+# Pass data to your context and render the template
+context = {'data': names}
+return render_template("index.html", **context)
 
  
 
