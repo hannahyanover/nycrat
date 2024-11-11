@@ -236,8 +236,6 @@ with engine.connect() as connection:  # "with" ensures the connection is properl
     connection.execute(text("INSERT INTO comment_on VALUES (8, 'this zipcode always has rats', 13);"))
     connection.execute(text("INSERT INTO comment_on VALUES (9, 'they should not have passed', 14);"))
     connection.execute(text("INSERT INTO comment_on VALUES (10, 'there definitely is rat activity!', 15);"))
-    connection.execute(text("INSERT INTO comment_on VALUES (11, 'i was there this happened trust', 16);"))
-    connection.execute(text("INSERT INTO comment_on VALUES (20, 'absolutely abhorrent', 17);"))
 
 
     connection.execute(text("DROP TABLE IF EXISTS comment_write;"))
@@ -263,8 +261,6 @@ with engine.connect() as connection:  # "with" ensures the connection is properl
     connection.execute(text("INSERT INTO comment_write VALUES (8, 'this zipcode always has rats', 'mno7890@columbia.edu');"))
     connection.execute(text("INSERT INTO comment_write VALUES (9, 'they should not have passed', 'jkl3456@columbia.edu');"))
     connection.execute(text("INSERT INTO comment_write VALUES (10, 'there definitely is rat activity!', 'def5678@columbia.edu');"))
-    connection.execute(text("INSERT INTO comment_write VALUES (11, 'i was there this happened trust', 'hry2106@columbia.edu');"))
-    connection.execute(text("INSERT INTO comment_write VALUES (12, 'absolutely abhorrent', 'hry2106@columbia.edu');"))
     
     connection.commit()
 
@@ -325,7 +321,7 @@ def sighting():
                 personal_rat_sighting AS prs
             JOIN 
                 post AS p ON prs.sighting_id = p.sighting_id
-            JOIN 
+            LEFT JOIN 
                 comment_on AS co ON p.post_id = co.post_id
             ORDER BY 
                 prs.sighting_id;
