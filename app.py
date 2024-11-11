@@ -64,7 +64,7 @@ def teardown_request(exception):
     pass
 
 
-@app.route('/home')
+@app.route('/')
 def home():
     # if not session.get('logged_in'):
     #     return render_template('login.html')
