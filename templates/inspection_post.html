@@ -56,6 +56,12 @@
             color: #777;
         }
 
+        .post-likes {
+            font-size: 0.9em;
+            color: #777;
+        }
+        
+
         .comment-box {
             background-color: #f9f9f9;
             border: 1px solid #ddd;
@@ -101,6 +107,7 @@
                     <div class="post-zipcode">Zip Code: {{ post['zip_code'] }}</div>
                     <div class="post-borough">Borough: {{ post['borough'] }}</div>
                     <div class="post-date">Date: {{ post['date'] }}</div>
+                    <div class="post-likes">Likes: {{ post['like_count'] }}</div> 
                     
                     {% if post['comment_text'] %}
                         <div class="comment-box">
