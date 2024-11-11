@@ -6,45 +6,6 @@ from flask import Flask, request, render_template, g, redirect, Response, jsonif
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
 
-html_template = """
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rat</title>
-    <style>
-        body {
-            text-align: center;
-            font-family: Arial, sans-serif;
-        }
-        h1 {
-            font-size: 3em;
-            margin-top: 20px;
-        }
-        button {
-            font-size: 1.2em;
-            margin: 10px;
-            padding: 10px 20px;
-        }
-        .rat-image {
-            width: 80%;
-            max-width: 600px;
-            margin-top: 20px;
-        }
-    </style>
-</head>
-<body>
-    <h1>Lucas and Hannah's Rat Sighting Website</h1>
-    <button onclick="location.href='/sighting'">Personal Rat Sighting</button>
-    <button onclick="location.href='/report'">Inspection Posts</button>
-    <button onclick="location.href='/qa'">Q&A Forum</button>
-    <br>
-    <img src="https://cdn.theatlantic.com/thumbor/ILSffj75k48V6kniK1TJMh1DXAw=/0x0:2400x3000/648x810/media/img/2023/03/01/Rats_opener4x5-1/original.jpg" alt="Rat in NYC" class="rat-image">
-</body>
-</html>
-"""
-
 DB_USER = "zz3306"
 DB_PASSWORD = "hry2106"
 
@@ -55,16 +16,6 @@ DATABASEURI = "postgresql://zz3306:hry2106@w4111.cisxo09blonu.us-east-1.rds.amaz
 engine = create_engine(DATABASEURI)
 
 with engine.connect() as connection:  # "with" ensures the connection is properly closed
-    print("Session created")
-
-    # Execute the SQL commands
-    connection.execute(text("""DROP TABLE IF EXISTS test;"""))
-    connection.execute(text("""CREATE TABLE IF NOT EXISTS test (
-        id serial,
-        name text
-    );"""))
-    connection.execute(text("""INSERT INTO test(name) VALUES
-        ('grace hopper'), ('alan turing'), ('ada lovelace');"""))
 
     connection.execute(text("""DROP TABLE IF EXISTS personal_rat_sighting CASCADE;"""))
     connection.execute(text("""CREATE TABLE personal_rat_sighting (
@@ -77,7 +28,13 @@ with engine.connect() as connection:  # "with" ensures the connection is properl
     connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(2, 10022, 'Spotted a rat near Lerner Hall!');"""))
     connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(3, 11206, 'Saw a huge rat by Low Library steps.');"""))
     connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(4, 10032, 'There was a rat scurrying near the CU Subway station.');"""))
-    connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(5, 10457, 'A rat just ran past me at John Jay!');"""))   
+    connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(5, 10457, 'A rat just ran past me at John Jay!');"""))  
+    connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(6, 11237, 'Witnessed a rat by the entrance to Hamilton Hall.');"""))
+    connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(7, 11385, 'Saw a rat sneaking around Mudd Building.');""")) 
+    connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(8, 10458, 'A rat just dashed across the lawns near Alma Mater.');""")) 
+    connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(9, 10453, 'A rat near the Columbia Bookstore on Broadway!');""")) 
+    connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(10, 11219, 'Spotted a rat behind Dodge Fitness Center.');""")) 
+    
 
 @app.before_request
 def before_request():
@@ -112,7 +69,7 @@ def home():
     # if not session.get('logged_in'):
     #     return render_template('login.html')
     # else:
-        return render_template_string(html_template)
+        return render_template_string('home.html')
 
 # @app.route('/login', methods=['POST'])
 # def do_admin_login():
