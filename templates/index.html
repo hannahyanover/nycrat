@@ -1,29 +1,67 @@
-<html>
-  <style>
-    body{ 
-      font-size: 15pt;
-      font-family: arial;
-    }
-  </style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Rat Sightings</title>
+    <style>
+        /* Basic styling for the page and posts */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .container {
+            width: 80%;
+            max-width: 800px;
+            margin: 20px auto;
+        }
 
+        .post-box {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
 
+        .post-id {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .post-comment {
+            margin: 10px 0;
+            color: #555;
+        }
+
+        .post-zipcode {
+            font-size: 0.9em;
+            color: #777;
+        }
+    </style>
+</head>
 <body>
-  <h1>Some famous Computer Scientists</h1>
-  <div>{{data}}</div>
+    <div class="container">
+        <h1>Personal Rat Sightings</h1>
 
-  <div>
-    {% for n in data %}
-    <div>{{n}}</div>
-    {% endfor %}
-  </div>
-
-<p><a href="/another">Go to the other page</a></p>
-
-<form method="POST" action="/add">
-<p>Name of new computer scientist: <input type="text" name="name"> <input type="submit" value="Add"></p>
-</form>
-
+        {% if data %}
+            {% for post in data %}
+                <div class="post-box">
+                    <div class="post-id">Post ID: {{ post['postid'] }}</div>
+                    <div class="post-comment">Comment: {{ post['comment'] }}</div>
+                    <div class="post-zipcode">Zip Code: {{ post['zipcode'] }}</div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No sightings available.</p>
+        {% endif %}
+    </div>
 </body>
-
-
 </html>
