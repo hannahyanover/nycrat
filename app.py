@@ -97,7 +97,7 @@ def search_sighting():
         zip_code = int(request.form['zip_code'])  # Converts input to integer if possible
     except ValueError:
         # If conversion fails, redirect or render an error message
-        return "Invalid input: must input a zipcode", 400
+        return render_template("personal_sighting.html", data=[])
     
     engine = create_engine(DATABASEURI)
     with engine.connect() as connection:  # "with" ensures the connection is properly closed after use
