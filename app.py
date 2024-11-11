@@ -317,7 +317,7 @@ def sighting():
                 prs.zip_code,
                 prs.comment AS sighting_comment,
                 co.text AS comment_text,
-                COALESCE(SUM(CASE WHEN v.vote = TRUE THEN 1 WHEN v.vote = FALSE THEN -1 ELSE 0 END), 0) AS like_count
+                COALESCE(SUM(CASE WHEN v.up_down = TRUE THEN 1 WHEN v.up_down = FALSE THEN -1 ELSE 0 END), 0) AS like_count
             FROM 
                 personal_rat_sighting AS prs
             JOIN 
