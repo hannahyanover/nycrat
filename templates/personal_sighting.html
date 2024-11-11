@@ -94,7 +94,12 @@
                     <div class="post-id">Post ID: {{ post['sighting_id'] }}</div>
                     <div class="post-comment">Sighting Comment: {{ post['sighting_comment'] }}</div>
                     <div class="post-zipcode">Zip Code: {{ post['zip_code'] }}</div>
-                    <div class="post-likes">Likes: {{ post['like_count'] }}</div> 
+                    <div class="post-likes"> # 
+                        Likes: <span id="like-count-{{ post['sighting_id'] }}">{{ post['like_count'] }}</span>
+                    </div>
+                    
+                    <button class="like-button" onclick="updateLikeCount({{ post['sighting_id'] }}, 'add')">Like</button>
+                    <button class="like-button" onclick="updateLikeCount({{ post['sighting_id'] }}, 'subtract')">Dislike</button> #
                     
                     {% if post['comment_text'] %}
                         <div class="comment-box">
@@ -109,5 +114,28 @@
             <p>No sightings available.</p>
         {% endif %}
     </div>
+<script>
+        // This function sends an AJAX request to update the like count
+        function updateLikeCount(post_id, action) {
+            // Prepare data to send
+            let data = { post_id: post_id, action: action };
+
+            // Send an AJAX POST request to the server
+            fetch('/update_like', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())  // Parse the JSON response
+            .then(data => {
+                // Update the like count on the page dynamically
+                let likeCountElement = document.getElementById('like-count-' + post_id);
+                likeCountElement.textContent = data.new_like_count;  // Set the new like count
+            })
+            .catch(error => console.error('Error:', error));  // Handle any errors
+        }
+    </script>
 </body>
 </html>
