@@ -28,7 +28,7 @@ with engine.connect() as connection:  # "with" ensures the connection is properl
     );"""))
 
     connection.execute(text("""CREATE TABLE inspection_post (
-        job_id text PRIMARY KEY,
+        inspection_id text PRIMARY KEY,
         zip_code int,
         borough text,
         result text,
