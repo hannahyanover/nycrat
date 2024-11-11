@@ -367,7 +367,7 @@ def report():
                 inspection_post AS i
             JOIN 
                 post AS p ON i.job_id = p.job_id
-            JOIN 
+            LEFT JOIN 
                 comment_on AS co ON p.post_id = co.post_id
         """))
         
