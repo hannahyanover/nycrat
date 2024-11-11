@@ -54,7 +54,7 @@ with engine.connect() as connection:  # "with" ensures the connection is properl
     connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(9, 10453, 'Saw a rat near 170th Street in the Bronx.');"""))  # Zip code 10453 (Bronx)
     connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(10, 11219, 'Spotted a rat near the Sunset Park area of Brooklyn.');"""))  # Zip code 11219 (Sunset Park, Brooklyn)
 
-    
+    connection.commit()
 
 @app.before_request
 def before_request():
