@@ -353,7 +353,28 @@ def search_sighting():
 
 @app.route('/report')
 def report():
-    return "Inspection Posts Page (Coming soon)"
+    engine = create_engine(DATABASEURI)
+    with engine.connect() as connection:  # "with" ensures the connection is properly closed after use
+        result = connection.execute(text("""
+            SELECT 
+                i.job_id, 
+                i.zip_code, 
+                i.borough, 
+                i.result, 
+                i.date,
+                co.text    
+            FROM 
+                inspection_post AS i
+            JOIN 
+                post AS p ON i.job_id = p.job_id
+            JOIN 
+                comment_on AS co ON p.post_id = co.post_id
+        """))
+        
+        columns = result.keys()  # Get column names (headers)
+        formatted_result = [dict(zip(columns, row)) for row in result.fetchall()]
+    
+    return render_template("inspection_post.html", data=formatted_result)
 
 @app.route('/qa')
 def qa():
