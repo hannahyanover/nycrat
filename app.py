@@ -18,29 +18,29 @@ engine = create_engine(DATABASEURI)
 with engine.connect() as connection:  # "with" ensures the connection is properly closed
 
     connection.execute(text("""DROP TABLE IF EXISTS personal_rat_sighting CASCADE;"""))
-    connection.execute(text("""DROP TABLE IF EXISTS inspection_post CASCADE;"""))
-    connection.execute(text("""DROP TABLE IF EXISTS post CASCADE;"""))
+    # connection.execute(text("""DROP TABLE IF EXISTS inspection_post CASCADE;"""))
+    # connection.execute(text("""DROP TABLE IF EXISTS post CASCADE;"""))
     
-    connection.execute(text("""CREATE TABLE personal_rat_sighting (
-        sighting_id int PRIMARY KEY,
-        zip_code int,
-        comment text
-    );"""))
+    # connection.execute(text("""CREATE TABLE personal_rat_sighting (
+    #     sighting_id int PRIMARY KEY,
+    #     zip_code int,
+    #     comment text
+    # );"""))
 
-    connection.execute(text("""CREATE TABLE inspection_post (
-        job_id text PRIMARY KEY,
-        zip_code int,
-        borough text,
-        result text,
-        date date
-    );"""))
+    # connection.execute(text("""CREATE TABLE inspection_post (
+    #     job_id text PRIMARY KEY,
+    #     zip_code int,
+    #     borough text,
+    #     result text,
+    #     date date
+    # );"""))
 
-    connection.execute(text("""CREATE TABLE post (
-        post_id int PRIMARY KEY,
-        sighting_id int REFERENCES personal_rat_sighting,
-        job_id text REFERENCES inspection_post,
-        CHECK ((sighting_id IS NULL OR job_id IS NULL) AND (sighting_id IS NOT NULL OR job_id IS NOT NULL))
-    );"""))
+    # connection.execute(text("""CREATE TABLE post (
+    #     post_id int PRIMARY KEY,
+    #     sighting_id int REFERENCES personal_rat_sighting,
+    #     job_id text REFERENCES inspection_post,
+    #     CHECK ((sighting_id IS NULL OR job_id IS NULL) AND (sighting_id IS NOT NULL OR job_id IS NOT NULL))
+    # );"""))
     
     connection.execute(text("DELETE FROM personal_rat_sighting;"))
     connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(1, 10458, 'Saw a rat near Fordham Road in the Bronx.');"""))  # Zip code 10458 (Bronx)
