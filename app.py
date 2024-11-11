@@ -376,6 +376,42 @@ def report():
     
     return render_template("inspection_post.html", data=formatted_result)
 
+@app.route('/search_inspection', methods=['POST'])
+def search_inspection():
+    search = request.form['search']
+    engine = create_engine(DATABASEURI)
+    
+    with engine.connect() as connection:
+        try:
+            # Try to convert the search input to an integer (for zip code search)
+            search_int = int(search)
+            query = text("""
+                SELECT * FROM inspection_post
+                WHERE zip_code = :search_query
+            """)
+            result = connection.execute(query, search_query=search_int)
+        
+        except ValueError:
+            # If the input is not an integer, check if it's one of the boroughs
+            boroughs = ['Manhattan', 'Brooklyn', 'Queens', 'Bronx', 'Staten Island']
+            
+            if search in boroughs:
+                query = text("""
+                    SELECT * FROM inspection_post
+                    WHERE borough = :search_query
+                """)
+                result = connection.execute(query, search_query=search)
+            else:
+                # If input is neither an integer nor a valid borough, return no results or handle error
+                return render_template("inspection_post.html", data=[])
+        
+        # Process and display results
+        columns = result.keys()
+        formatted_result = [dict(zip(columns, row)) for row in result.fetchall()]
+    
+    return render_template("inspection_results.html", data=formatted_result)
+        
+
 @app.route('/qa')
 def qa():
     return "Q&A Forum (Coming soon)"
