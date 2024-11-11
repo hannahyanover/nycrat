@@ -86,7 +86,26 @@ def sighting():
      result = connection.execute((text("SELECT * FROM personal_rat_sighting")))
      columns = result.keys()  # Get column names (headers)
      formatted_result = [dict(zip(columns, row)) for row in result.fetchall()]
-  return render_template("index.html", data=formatted_result)
+  return render_template("personal_sighting.html", data=formatted_result)
+
+@app.route('/search_sighting', methods=['POST'])
+def search_sighting():
+    # Get the name from the form submission
+    zip_code = request.form['zip_code']
+
+    try:
+        zip_code = int(request.form['zip_code'])  # Converts input to integer if possible
+    except ValueError:
+        # If conversion fails, redirect or render an error message
+        return "Invalid input: must input a zipcode", 400
+    
+    engine = create_engine(DATABASEURI)
+    with engine.connect() as connection:  # "with" ensures the connection is properly closed after use
+         query = text("SELECT * FROM personal_rat_sighting WHERE zip_code = :zip_code")
+         result = connection.execute(query, zip_code=zip_code)
+         columns = result.keys()  # Get column names (headers)
+         formatted_result = [dict(zip(columns, row)) for row in result.fetchall()]
+    return render_template("personal_sighting.html", data=formatted_result)
 
 @app.route('/report')
 def report():
