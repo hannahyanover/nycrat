@@ -357,18 +357,23 @@ def report():
     with engine.connect() as connection:  # "with" ensures the connection is properly closed after use
         result = connection.execute(text("""
             SELECT 
-                i.job_id, 
-                i.zip_code, 
-                i.borough, 
-                i.result, 
-                i.date,
-                co.text as comment_text    
+                prs.sighting_id,
+                prs.zip_code,
+                prs.comment AS sighting_comment,
+                co.text AS comment_text,
+                COALESCE(SUM(CASE WHEN v.vote = TRUE THEN 1 WHEN v.vote = FALSE THEN -1 ELSE 0 END), 0) AS like_count
             FROM 
-                inspection_post AS i
+                personal_rat_sighting AS prs
             JOIN 
-                post AS p ON i.job_id = p.job_id
+                post AS p ON prs.sighting_id = p.sighting_id
             LEFT JOIN 
                 comment_on AS co ON p.post_id = co.post_id
+            LEFT JOIN 
+                Vote AS v ON p.post_id = v.post_id
+            GROUP BY 
+                prs.sighting_id, prs.zip_code, prs.comment, co.text
+            ORDER BY 
+                prs.sighting_id;
         """))
         
         columns = result.keys()  # Get column names (headers)
