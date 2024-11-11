@@ -66,6 +66,19 @@ with engine.connect() as connection:  # "with" ensures the connection is properl
     connection.execute(text("""INSERT INTO test(name) VALUES
         ('grace hopper'), ('alan turing'), ('ada lovelace');"""))
 
+    connection.execute(text("""DROP TABLE IF EXISTS personal_rat_sighting;"""))
+    connection.execute(text("""CREATE TABLE personal_rat_sighting (
+        sighting_id int PRIMARY KEY,
+        zip_code int,
+        comment text
+    );"""))
+    connection.execute(text("DELETE FROM personal_rat_sighting;"))
+    connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(1, 10458, 'I just saw a rat at Butler!');"""))
+    connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(2, 10022, 'Spotted a rat near Lerner Hall!');"""))
+    connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(3, 11206, 'Saw a huge rat by Low Library steps.');"""))
+    connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(4, 10032, 'There was a rat scurrying near the CU Subway station.');"""))
+    connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(5, 10457, 'A rat just ran past me at John Jay!');"""))   
+
 @app.before_request
 def before_request():
   """
@@ -113,10 +126,10 @@ def home():
 def sighting():
   engine = create_engine(DATABASEURI)
   with engine.connect() as connection:  # "with" ensures the connection is properly closed after use
-     result = connection.execute((text("SELECT name FROM test")))
-     names = [row[0] for row in result.fetchall()] 
-  context = {'data': names}
-  return render_template("index.html", **context)
+     result = connection.execute((text("SELECT * FROM personal_rat_sighting")))
+     columns = result.keys()  # Get column names (headers)
+     formatted_result = [dict(zip(columns, row)) for row in result.fetchall()]
+  return formatted_result  # Or pass to context for rendering in template
 
 @app.route('/report')
 def report():
