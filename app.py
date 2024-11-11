@@ -24,17 +24,17 @@ with engine.connect() as connection:  # "with" ensures the connection is properl
         comment text
     );"""))
     connection.execute(text("DELETE FROM personal_rat_sighting;"))
-    connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(1, 10458, 'I just saw a rat at Butler!');"""))
-    connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(2, 10022, 'Spotted a rat near Lerner Hall!');"""))
-    connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(3, 11206, 'Saw a huge rat by Low Library steps.');"""))
-    connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(4, 10032, 'There was a rat scurrying near the CU Subway station.');"""))
-    connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(5, 10457, 'A rat just ran past me at John Jay!');"""))  
-    connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(6, 11237, 'Witnessed a rat by the entrance to Hamilton Hall.');"""))
-    connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(7, 11385, 'Saw a rat sneaking around Mudd Building.');""")) 
-    connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(8, 10458, 'A rat just dashed across the lawns near Alma Mater.');""")) 
-    connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(9, 10453, 'A rat near the Columbia Bookstore on Broadway!');""")) 
-    connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(10, 11219, 'Spotted a rat behind Dodge Fitness Center.');""")) 
-    
+
+    connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(1, 10458, 'Saw a rat near Fordham Road in the Bronx.');"""))  # Zip code 10458 (Bronx)
+    connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(2, 10022, 'Spotted a rat near Grand Central Terminal in Midtown Manhattan.');"""))  # Zip code 10022 (Midtown Manhattan)
+    connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(3, 11206, 'Spotted a rat in the Bushwick area of Brooklyn.');"""))  # Zip code 11206 (Bushwick, Brooklyn)
+    connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(4, 10032, 'Saw a rat near the medical campus in Washington Heights.');"""))  # Zip code 10032 (Washington Heights)
+    connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(5, 10457, 'A rat ran across the street in the Kingsbridge area of the Bronx.');"""))  # Zip code 10457 (Kingsbridge, Bronx)
+    connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(6, 11237, 'Witnessed a rat in the residential area of Ridgewood, Queens.');"""))  # Zip code 11237 (Ridgewood, Queens)
+    connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(7, 11385, 'Saw a rat near Wyckoff Avenue in Ridgewood.');"""))  # Zip code 11385 (Ridgewood, Queens)
+    connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(8, 10458, 'A rat crossed the street near the Bronx Zoo.');"""))  # Zip code 10458 (Bronx Zoo area)
+    connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(9, 10453, 'Saw a rat near 170th Street in the Bronx.');"""))  # Zip code 10453 (Bronx)
+    connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(10, 11219, 'Spotted a rat near the Sunset Park area of Brooklyn.');"""))  # Zip code 11219 (Sunset Park, Brooklyn) 
 
 @app.before_request
 def before_request():
