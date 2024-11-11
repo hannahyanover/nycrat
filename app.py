@@ -21,11 +21,11 @@ with engine.connect() as connection:  # "with" ensures the connection is properl
     # connection.execute(text("""DROP TABLE IF EXISTS inspection_post CASCADE;"""))
     # connection.execute(text("""DROP TABLE IF EXISTS post CASCADE;"""))
     
-    # connection.execute(text("""CREATE TABLE personal_rat_sighting (
-    #     sighting_id int PRIMARY KEY,
-    #     zip_code int,
-    #     comment text
-    # );"""))
+    connection.execute(text("""CREATE TABLE personal_rat_sighting (
+        sighting_id int PRIMARY KEY,
+        zip_code int,
+        comment text
+    );"""))
 
     # connection.execute(text("""CREATE TABLE inspection_post (
     #     job_id text PRIMARY KEY,
