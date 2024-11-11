@@ -309,12 +309,28 @@ def do_admin_login():
 
 @app.route('/sighting')
 def sighting():
-  engine = create_engine(DATABASEURI)
-  with engine.connect() as connection:  # "with" ensures the connection is properly closed after use
-     result = connection.execute((text("SELECT * FROM personal_rat_sighting")))
-     columns = result.keys()  # Get column names (headers)
-     formatted_result = [dict(zip(columns, row)) for row in result.fetchall()]
-  return render_template("personal_sighting.html", data=formatted_result)
+    engine = create_engine(DATABASEURI)
+    with engine.connect() as connection:  # "with" ensures the connection is properly closed after use
+        result = connection.execute(text("""
+            SELECT 
+                prs.sighting_id,
+                prs.zip_code,
+                prs.comment AS sighting_comment,
+                co.text AS comment_text
+            FROM 
+                personal_rat_sighting AS prs
+            JOIN 
+                post AS p ON prs.sighting_id = p.sighting_id
+            JOIN 
+                comment_on AS co ON p.post_id = co.post_id
+            ORDER BY 
+                prs.sighting_id;
+        """))
+        
+        columns = result.keys()  # Get column names (headers)
+        formatted_result = [dict(zip(columns, row)) for row in result.fetchall()]
+    
+    return render_template("personal_sighting.html", data=formatted_result)
 
 @app.route('/search_sighting', methods=['POST'])
 def search_sighting():
