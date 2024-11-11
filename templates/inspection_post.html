@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inspection Posts</title>
+    <style>
+        /* Basic styling for the page and posts */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .container {
+            width: 80%;
+            max-width: 800px;
+            margin: 20px auto;
+        }
+
+        .post-box {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .post-id {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .post-comment {
+            margin: 10px 0;
+            color: #555;
+        }
+
+        .post-zipcode {
+            font-size: 0.9em;
+            color: #777;
+        }
+
+        .post-borough {
+            font-size: 0.9em;
+            color: #777;
+        }
+
+        .post-date {
+            font-size: 0.9em;
+            color: #777;
+        }
+
+        .comment-box {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .comment-box .comment-text {
+            font-style: italic;
+            color: #555;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Inspection Posts</h1>
+        <button onclick="location.href='/sighting'" style="background-color: #007BFF; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-right: 5px;">
+            Personal Rat Sighting
+        </button>
+        <button onclick="location.href='/report'" style="background-color: #007BFF; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-right: 5px;">
+            Inspection Posts
+        </button>
+        <button onclick="location.href='/qa'" style="background-color: #007BFF; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+            Q&A Forum
+        </button>
+        <button onclick="location.href='/'" style="background-color: #007BFF; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+            Home
+        </button>
+
+<!--         <form action="/search_sighting" method="POST">
+            <label for="zip_code">Zipcode:</label>
+            <input type="text" id="zip_code" name="zip_code" placeholder="Enter zipcode to search" required>
+            <button type="submit">Search</button>
+        </form> -->
+
+        {% if data %}
+            {% for post in data %}
+                <div class="post-box">
+                    <div class="post-id">Job Id: {{ post['job_id'] }}</div>
+                    <div class="post-comment">Result: {{ post['result'] }}</div>
+                    <div class="post-zipcode">Zip Code: {{ post['zip_code'] }}</div>
+                    <div class="post-borough">Borough: {{ post['borough'] }}</div>
+                    <div class="post-date">Date: {{ post['date'] }}</div>
+                    
+                    {% if post['comment_text'] %}
+                        <div class="comment-box">
+                            <div class="comment-text">Comment: {{ post['comment_text'] }}</div>
+                        </div>
+                    {% else %}
+                        <p>No comments yet.</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No inspection posts available.</p>
+        {% endif %}
+    </div>
+</body>
+</html>
