@@ -63,11 +63,12 @@
             Home
         </button>
 
-        <form action="/search_sighting" method="POST">
-            <label for="zipcode">Zipcode:</label>
-            <input type="text" id="zipcode" name="zipcode" placeholder="Enter zipcode to search for corresponding post" required>
+        <form action="/search" method="POST">
+            <label for="zip_code">Zipcode:</label>
+            <input type="text" id="zip_code" name="zip_code" placeholder="Enter zipcode to search" required>
             <button type="submit">Search</button>
         </form>
+
 
         {% if data %}
             {% for post in data %}
