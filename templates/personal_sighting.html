@@ -45,6 +45,20 @@
             font-size: 0.9em;
             color: #777;
         }
+
+        .comment-box {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .comment-box .comment-text {
+            font-style: italic;
+            color: #555;
+        }
+
     </style>
 </head>
 <body>
@@ -69,13 +83,20 @@
             <button type="submit">Search</button>
         </form>
 
-
         {% if data %}
             {% for post in data %}
                 <div class="post-box">
                     <div class="post-id">Post ID: {{ post['sighting_id'] }}</div>
-                    <div class="post-comment">Comment: {{ post['comment'] }}</div>
+                    <div class="post-comment">Sighting Comment: {{ post['sighting_comment'] }}</div>
                     <div class="post-zipcode">Zip Code: {{ post['zip_code'] }}</div>
+                    
+                    {% if post['comment_text'] %}
+                        <div class="comment-box">
+                            <div class="comment-text">Comment: {{ post['comment_text'] }}</div>
+                        </div>
+                    {% else %}
+                        <p>No comments yet.</p>
+                    {% endif %}
                 </div>
             {% endfor %}
         {% else %}
