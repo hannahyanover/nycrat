@@ -362,7 +362,7 @@ def report():
                 i.borough, 
                 i.result, 
                 i.date,
-                co.text    
+                co.text as comment_text    
             FROM 
                 inspection_post AS i
             JOIN 
