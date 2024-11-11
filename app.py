@@ -365,7 +365,7 @@ def update_like():
     user_email = 'admin'  # Assuming user email is stored in session
 
     # Determine the 'up_down' value for the vote
-    up_down = 1 if action == 'add' else -1  # 1 for like, -1 for dislike
+    up_down = True if action == 'add' else False  # 1 for like, -1 for dislike
 
     # Check if the user has already voted
     engine = create_engine(DATABASEURI)
