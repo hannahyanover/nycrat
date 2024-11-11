@@ -115,27 +115,28 @@
         {% endif %}
     </div>
 <script>
-        // This function sends an AJAX request to update the like count
-        function updateLikeCount(post_id, action) {
-            // Prepare data to send
-            let data = { post_id: post_id, action: action };
+    // This function sends an AJAX request to update the like count
+    function updateLikeCount(post_id, action) {
+        // Prepare data to send
+        let data = { post_id: post_id, action: action };
 
-            // Send an AJAX POST request to the server
-            fetch('/update_like', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            })
-            .then(response => response.json())  // Parse the JSON response
-            .then(data => {
-                // Update the like count on the page dynamically
-                let likeCountElement = document.getElementById('like-count-' + post_id);
-                likeCountElement.textContent = data.new_like_count;  // Set the new like count
-            })
-            .catch(error => console.error('Error:', error));  // Handle any errors
-        }
-    </script>
+        // Send an AJAX POST request to the server
+        fetch('/update_like', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())  // Parse the JSON response
+        .then(data => {
+            // Update the like count on the page dynamically
+            let likeCountElement = document.getElementById('like-count-' + post_id);
+            likeCountElement.textContent = data.new_like_count;  // Set the new like count
+        })
+        .catch(error => console.error('Error:', error));  // Handle any errors
+    }
+</script>
+
 </body>
 </html>
