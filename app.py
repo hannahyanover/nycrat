@@ -17,6 +17,28 @@ engine = create_engine(DATABASEURI)
 
 with engine.connect() as connection:  # "with" ensures the connection is properly closed
 
+    connection.execute(text("DROP TABLE IF EXISTS Email CASCADE;"))
+    connection.execute(text("""
+        CREATE TABLE Email (
+            email_address TEXT,
+            name TEXT,
+            PRIMARY KEY (email_address)
+        );
+    """))
+
+    connection.execute(text("DELETE FROM Email;"))
+    connection.execute(text("INSERT INTO Email VALUES ('hry2106@columbia.edu','HannahYanover');"))
+    connection.execute(text("INSERT INTO Email VALUES ('zz3306@columbia.edu','LucasZheng');"))
+    connection.execute(text("INSERT INTO Email VALUES ('abc1234@columbia.edu', 'AliceBrown');"))
+    connection.execute(text("INSERT INTO Email VALUES ('def5678@columbia.edu', 'DavidSmith');"))
+    connection.execute(text("INSERT INTO Email VALUES ('ghi9012@columbia.edu', 'EmilyJohnson');"))
+    connection.execute(text("INSERT INTO Email VALUES ('jkl3456@columbia.edu', 'MichaelLee');"))
+    connection.execute(text("INSERT INTO Email VALUES ('mno7890@columbia.edu', 'SophiaMartinez');"))
+    connection.execute(text("INSERT INTO Email VALUES ('pqr1234@columbia.edu', 'JamesTaylor');"))
+    connection.execute(text("INSERT INTO Email VALUES ('stu5678@columbia.edu', 'OliviaWilliams');"))
+    connection.execute(text("INSERT INTO Email VALUES ('vwx9012@columbia.edu', 'WilliamClark');"))
+
+
     connection.execute(text("""DROP TABLE IF EXISTS personal_rat_sighting CASCADE;"""))
     connection.execute(text("""DROP TABLE IF EXISTS inspection_post CASCADE;"""))
     connection.execute(text("""DROP TABLE IF EXISTS post CASCADE;"""))
@@ -146,6 +168,107 @@ with engine.connect() as connection:  # "with" ensures the connection is properl
     
     connection.execute(text("""INSERT INTO post (post_id, sighting_id, job_id) 
                                VALUES (20, NULL, 'PC6986296')"""))
+
+    connection.execute(text("DROP TABLE IF EXISTS Personal_rat_sighting_Share;"))
+    connection.execute(text("""
+        CREATE TABLE Personal_rat_sighting_Share(
+          sighting_id INT,
+          zip_code INT,
+          comment TEXT,
+          email_address TEXT,
+          PRIMARY KEY (sighting_id, email_address),
+          FOREIGN KEY (email_address) REFERENCES Email
+          ON DELETE CASCADE
+        );
+    """))
+    connection.execute(text("DELETE FROM Personal_rat_sighting_Share;"))
+    connection.execute(text("INSERT INTO Personal_rat_sighting_Share VALUES(1, 10458, 'Saw a rat near Fordham Road in the Bronx.', 'hry2106@columbia.edu');"))
+    connection.execute(text("INSERT INTO Personal_rat_sighting_Share VALUES(2, 10022, 'Spotted a rat near Grand Central Terminal in Midtown Manhattan.', 'zz3306@columbia.edu');"))
+    connection.execute(text("INSERT INTO Personal_rat_sighting_Share VALUES(3, 11206, 'Spotted a rat in the Bushwick area of Brooklyn.', 'abc1234@columbia.edu');"))
+    connection.execute(text("INSERT INTO Personal_rat_sighting_Share VALUES(4, 10032, 'Saw a rat near the medical campus in Washington Heights.', 'def5678@columbia.edu');"))
+    connection.execute(text("INSERT INTO Personal_rat_sighting_Share VALUES(5, 10457, 'A rat ran across the street in the Kingsbridge area of the Bronx.', 'ghi9012@columbia.edu');"))
+    connection.execute(text("INSERT INTO Personal_rat_sighting_Share VALUES(6, 11237, 'Witnessed a rat in the residential area of Ridgewood, Queens.', 'jkl3456@columbia.edu');"))
+    connection.execute(text("INSERT INTO Personal_rat_sighting_Share VALUES(7, 11385, 'Saw a rat near Wyckoff Avenue in Ridgewood.', 'mno7890@columbia.edu');"))
+    connection.execute(text("INSERT INTO Personal_rat_sighting_Share VALUES(8, 10458, 'A rat crossed the street near the Bronx Zoo.', 'pqr1234@columbia.edu');"))
+    connection.execute(text("INSERT INTO Personal_rat_sighting_Share VALUES(9, 10453, 'Saw a rat near 170th Street in the Bronx.', 'stu5678@columbia.edu');"))
+    connection.execute(text("INSERT INTO Personal_rat_sighting_Share VALUES(10, 11219, 'Spotted a rat near the Sunset Park area of Brooklyn.', 'vwx9012@columbia.edu');"))
+
+    connection.execute(text("DROP TABLE IF EXISTS Vote;"))
+    connection.execute(text("""
+        CREATE TABLE Vote(
+          email_address TEXT REFERENCES Email,
+          post_id INT REFERENCES Post,
+          up_down BOOLEAN,
+          PRIMARY KEY(email_address, post_id)
+        );
+    """))
+    connection.execute(text("DELETE FROM Vote;"))
+    connection.execute(text("INSERT INTO Vote VALUES('zz3306@columbia.edu', 1, FALSE);"))
+    connection.execute(text("INSERT INTO Vote VALUES('ghi9012@columbia.edu', 2, TRUE);"))
+    connection.execute(text("INSERT INTO Vote VALUES('hry2106@columbia.edu', 3, FALSE);"))
+    connection.execute(text("INSERT INTO Vote VALUES('mno7890@columbia.edu', 4, TRUE);"))
+    connection.execute(text("INSERT INTO Vote VALUES('abc1234@columbia.edu', 5, FALSE);"))
+    connection.execute(text("INSERT INTO Vote VALUES('pqr1234@columbia.edu', 6, TRUE);"))
+    connection.execute(text("INSERT INTO Vote VALUES('stu5678@columbia.edu', 7, FALSE);"))
+    connection.execute(text("INSERT INTO Vote VALUES('vwx9012@columbia.edu', 8, TRUE);"))
+    connection.execute(text("INSERT INTO Vote VALUES('jkl3456@columbia.edu', 9, FALSE);"))
+    connection.execute(text("INSERT INTO Vote VALUES('def5678@columbia.edu', 10, TRUE);"))
+
+    from sqlalchemy import create_engine, text
+
+# Define your database URI (replace with actual connection details)
+DATABASE_URI = 'your_database_uri_here'
+engine = create_engine(DATABASE_URI)
+
+with engine.connect() as connection:
+    # Drop and recreate the comment_on table
+    connection.execute(text("DROP TABLE IF EXISTS comment_on;"))
+    connection.execute(text("""
+        CREATE TABLE comment_on(
+          on_id SERIAL,
+          text TEXT,
+          post_id INT NOT NULL,
+          PRIMARY KEY (on_id),
+          FOREIGN KEY (post_id) REFERENCES Post
+            ON DELETE CASCADE
+        );
+    """))
+    connection.execute(text("DELETE FROM comment_on;"))
+    connection.execute(text("INSERT INTO comment_on VALUES (1, 'omg me too!', 1);"))
+    connection.execute(text("INSERT INTO comment_on VALUES (2, 'really?!', 2);"))
+    connection.execute(text("INSERT INTO comment_on VALUES (3, 'not surprising', 3);"))
+    connection.execute(text("INSERT INTO comment_on VALUES (4, 'can't believe this', 4);"))
+    connection.execute(text("INSERT INTO comment_on VALUES (5, 'did it run or did it scuttle though', 5);"))
+    connection.execute(text("INSERT INTO comment_on VALUES (6, 'wow the Bronx passed', 11);"))
+    connection.execute(text("INSERT INTO comment_on VALUES (7, 'this zipcode never has rats', 12);"))
+    connection.execute(text("INSERT INTO comment_on VALUES (8, 'this zipcode always has rats', 13);"))
+    connection.execute(text("INSERT INTO comment_on VALUES (9, 'they should not have passed', 14);"))
+    connection.execute(text("INSERT INTO comment_on VALUES (10, 'there definitely is rat activity!', 15);"))
+
+
+    connection.execute(text("DROP TABLE IF EXISTS comment_write;"))
+    connection.execute(text("""
+        CREATE TABLE comment_write(
+          write_id SERIAL,
+          text TEXT,
+          email_address TEXT NOT NULL,
+          PRIMARY KEY (write_id),
+          FOREIGN KEY (email_address) REFERENCES Email
+            ON DELETE CASCADE
+        );
+    """))
+
+    connection.execute(text("DELETE FROM comment_write;"))
+    connection.execute(text("INSERT INTO comment_write VALUES (1, 'omg me too!', 'ghi9012@columbia.edu');"))
+    connection.execute(text("INSERT INTO comment_write VALUES (2, 'really?!', 'abc1234@columbia.edu');"))
+    connection.execute(text("INSERT INTO comment_write VALUES (3, 'not surprising', 'hry2106@columbia.edu');"))
+    connection.execute(text("INSERT INTO comment_write VALUES (4, 'can't believe this', 'vwx9012@columbia.edu');"))
+    connection.execute(text("INSERT INTO comment_write VALUES (5, 'did it run or did it scuttle though', 'stu5678@columbia.edu');"))
+    connection.execute(text("INSERT INTO comment_write VALUES (6, 'wow the Bronx passed', 'zz3306@columbia.edu');"))
+    connection.execute(text("INSERT INTO comment_write VALUES (7, 'this zipcode never has rats', 'pqr1234@columbia.edu');"))
+    connection.execute(text("INSERT INTO comment_write VALUES (8, 'this zipcode always has rats', 'mno7890@columbia.edu');"))
+    connection.execute(text("INSERT INTO comment_write VALUES (9, 'they should not have passed', 'jkl3456@columbia.edu');"))
+    connection.execute(text("INSERT INTO comment_write VALUES (10, 'there definitely is rat activity!', 'def5678@columbia.edu');"))
     
     connection.commit()
 
