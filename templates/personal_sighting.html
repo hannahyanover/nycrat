@@ -63,6 +63,12 @@
             Home
         </button>
 
+        <form action="/add" method="POST">
+            <label for="zipcode">Zipcode:</label>
+            <input type="text" id="zipcode" name="zipcode" placeholder="Enter zipcode to search for corresponding post" required>
+            <button type="submit">Search</button>
+        </form>
+
         {% if data %}
             {% for post in data %}
                 <div class="post-box">
