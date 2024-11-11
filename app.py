@@ -264,7 +264,7 @@ with engine.connect() as connection:  # "with" ensures the connection is properl
     connection.execute(text("INSERT INTO comment_write VALUES (9, 'they should not have passed', 'jkl3456@columbia.edu');"))
     connection.execute(text("INSERT INTO comment_write VALUES (10, 'there definitely is rat activity!', 'def5678@columbia.edu');"))
     connection.execute(text("INSERT INTO comment_write VALUES (11, 'i was there this happened trust', 'hry2106@columbia.edu');"))
-    connection.execute(text("INSERT INTO comment_write VALUES (12, 'absolutely abhorrent', 'hry2106@columbia.edu);"))
+    connection.execute(text("INSERT INTO comment_write VALUES (12, 'absolutely abhorrent', 'hry2106@columbia.edu');"))
     
     connection.commit()
 
