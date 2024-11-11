@@ -214,14 +214,6 @@ with engine.connect() as connection:  # "with" ensures the connection is properl
     connection.execute(text("INSERT INTO Vote VALUES('jkl3456@columbia.edu', 9, FALSE);"))
     connection.execute(text("INSERT INTO Vote VALUES('def5678@columbia.edu', 10, TRUE);"))
 
-    from sqlalchemy import create_engine, text
-
-# Define your database URI (replace with actual connection details)
-DATABASE_URI = 'your_database_uri_here'
-engine = create_engine(DATABASE_URI)
-
-with engine.connect() as connection:
-    # Drop and recreate the comment_on table
     connection.execute(text("DROP TABLE IF EXISTS comment_on;"))
     connection.execute(text("""
         CREATE TABLE comment_on(
