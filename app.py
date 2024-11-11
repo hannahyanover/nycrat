@@ -86,7 +86,7 @@ with engine.connect() as connection:  # "with" ensures the connection is properl
     connection.execute(text("""INSERT INTO inspection_post (job_id, zip_code, borough, result, date)
                                VALUES ('PC7270050', 11206, 'Brooklyn', 'Passed', '2018-10-10 12:57:02')"""))
 
-    connection.execute(text("""INSERT INTO inspection_post (job_id zip_code, borough, result, date)
+    connection.execute(text("""INSERT INTO inspection_post (job_id, zip_code, borough, result, date)
                                VALUES ('PC6481130', 10032, 'Manhattan', 'Passed', '2019-02-07 12:48:34')"""))
 
     connection.execute(text("""INSERT INTO inspection_post (job_id, zip_code, borough, result, date)
