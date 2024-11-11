@@ -54,9 +54,9 @@
         {% if data %}
             {% for post in data %}
                 <div class="post-box">
-                    <div class="post-id">Post ID: {{ post['postid'] }}</div>
+                    <div class="post-id">Post ID: {{ post['sighting_id'] }}</div>
                     <div class="post-comment">Comment: {{ post['comment'] }}</div>
-                    <div class="post-zipcode">Zip Code: {{ post['zipcode'] }}</div>
+                    <div class="post-zipcode">Zip Code: {{ post['zip_code'] }}</div>
                 </div>
             {% endfor %}
         {% else %}
