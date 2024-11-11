@@ -356,6 +356,58 @@ def search_sighting():
          formatted_result = [dict(zip(columns, row)) for row in result.fetchall()]
     return render_template("personal_sighting.html", data=formatted_result)
 
+
+@app.route('/update_like', methods=['POST'])
+def update_like():
+    data = request.get_json()
+    post_id = data['post_id']
+    action = data['action']
+    user_email = 'admin'  # Assuming user email is stored in session
+
+    # Determine the 'up_down' value for the vote
+    up_down = 1 if action == 'add' else -1  # 1 for like, -1 for dislike
+
+    # Check if the user has already voted
+    engine = create_engine(DATABASEURI)
+    with engine.connect() as connection:
+        # Check if the user already voted for this post
+        result = connection.execute(text("""
+            SELECT up_down 
+            FROM Vote 
+            WHERE post_id = :post_id AND user_email = :user_email
+        """), {'post_id': post_id, 'user_email': user_email})
+        
+        current_vote = result.fetchone()
+        
+        if current_vote:
+            # If a vote already exists, we need to update it
+            if current_vote[0] != up_down:
+                connection.execute(text("""
+                    UPDATE Vote
+                    SET up_down = :up_down
+                    WHERE post_id = :post_id AND user_email = :user_email
+                """), {'post_id': post_id, 'user_email': user_email, 'up_down': up_down})
+        else:
+            # If no vote exists, insert a new one
+            connection.execute(text("""
+                INSERT INTO Vote (user_email, post_id, up_down)
+                VALUES (:user_email, :post_id, :up_down)
+            """), {'user_email': user_email, 'post_id': post_id, 'up_down': up_down})
+
+        # After updating the vote, get the new like count
+        result = connection.execute(text("""
+            SELECT 
+                COALESCE(SUM(CASE WHEN v.up_down = TRUE THEN 1 WHEN v.up_down = FALSE THEN -1 ELSE 0 END), 0) AS like_count
+            FROM 
+                Vote AS v
+            WHERE v.post_id = :post_id
+        """), {'post_id': post_id})
+
+        new_like_count = result.scalar()
+
+    return jsonify({'new_like_count': new_like_count})
+
+
 @app.route('/report')
 def report():
     engine = create_engine(DATABASEURI)
