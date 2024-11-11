@@ -224,10 +224,6 @@ def search_inspection():
 def qa():
     return "Q&A Forum (Coming soon)"
 
-@app.route('/qa')
-def qa():
-    return "Q&A Forum (Coming soon)"
-
 if __name__ == "__main__":
   import click
 
