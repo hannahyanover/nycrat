@@ -102,7 +102,7 @@ def search_sighting():
     engine = create_engine(DATABASEURI)
     with engine.connect() as connection:  # "with" ensures the connection is properly closed after use
          query = text("SELECT * FROM personal_rat_sighting WHERE zip_code = :zip_code")
-         result = connection.execute(query, zip_code=zip_code)
+         result = connection.execute(query, {"zip_code": zip_code})
          columns = result.keys()  # Get column names (headers)
          formatted_result = [dict(zip(columns, row)) for row in result.fetchall()]
     return render_template("personal_sighting.html", data=formatted_result)
