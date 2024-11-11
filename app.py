@@ -66,7 +66,7 @@ with engine.connect() as connection:  # "with" ensures the connection is properl
     connection.execute(text("""INSERT INTO test(name) VALUES
         ('grace hopper'), ('alan turing'), ('ada lovelace');"""))
 
-    connection.execute(text("""DROP TABLE IF EXISTS personal_rat_sighting;"""))
+    connection.execute(text("""DROP TABLE IF EXISTS personal_rat_sighting CASCADE;"""))
     connection.execute(text("""CREATE TABLE personal_rat_sighting (
         sighting_id int PRIMARY KEY,
         zip_code int,
