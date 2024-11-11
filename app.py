@@ -389,7 +389,7 @@ def search_inspection():
                 SELECT * FROM inspection_post
                 WHERE zip_code = :search_query
             """)
-            result = connection.execute(query, search_query=search_int)
+            result = connection.execute(query, {"search_query": search_int})
         
         except ValueError:
             # If the input is not an integer, check if it's one of the boroughs
@@ -400,7 +400,7 @@ def search_inspection():
                     SELECT * FROM inspection_post
                     WHERE borough = :search_query
                 """)
-                result = connection.execute(query, search_query=search)
+                result = connection.execute(query, {"search_query": search})
             else:
                 # If input is neither an integer nor a valid borough, return no results or handle error
                 return render_template("inspection_post.html", data=[])
