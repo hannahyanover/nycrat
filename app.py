@@ -86,7 +86,7 @@ def sighting():
      result = connection.execute((text("SELECT * FROM personal_rat_sighting")))
      columns = result.keys()  # Get column names (headers)
      formatted_result = [dict(zip(columns, row)) for row in result.fetchall()]
-  return formatted_result  # Or pass to context for rendering in template
+  return render_template("index.html", data=formatted_result)
 
 @app.route('/report')
 def report():
