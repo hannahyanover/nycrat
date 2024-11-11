@@ -50,7 +50,7 @@ with engine.connect() as connection:  # "with" ensures the connection is properl
     );"""))
 
     connection.execute(text("""CREATE TABLE inspection_post (
-        inspection_id text PRIMARY KEY,
+        job_id text PRIMARY KEY,
         zip_code int,
         borough text,
         result text,
@@ -77,34 +77,34 @@ with engine.connect() as connection:  # "with" ensures the connection is properl
     connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(10, 11219, 'Spotted a rat near the Sunset Park area of Brooklyn.');"""))  # Zip code 11219 (Sunset Park, Brooklyn)
 
     connection.execute(text("DELETE FROM inspection_post;"))
-    connection.execute(text("""INSERT INTO inspection_post (inspection_id, zip_code, borough, result, date)
+    connection.execute(text("""INSERT INTO inspection_post (job_id, zip_code, borough, result, date)
                                VALUES ('PC6530234', 10458, 'Bronx', 'Passed', '2010-08-30 15:23:11')"""))
 
-    connection.execute(text("""INSERT INTO inspection_post (inspection_id, zip_code, borough, result, date)
+    connection.execute(text("""INSERT INTO inspection_post (job_id, zip_code, borough, result, date)
                                VALUES ('PC6101553', 10022, 'Manhattan', 'Passed', '2011-08-18 12:05:54')"""))
 
-    connection.execute(text("""INSERT INTO inspection_post (inspection_id, zip_code, borough, result, date)
+    connection.execute(text("""INSERT INTO inspection_post (job_id, zip_code, borough, result, date)
                                VALUES ('PC7270050', 11206, 'Brooklyn', 'Passed', '2018-10-10 12:57:02')"""))
 
-    connection.execute(text("""INSERT INTO inspection_post (inspection_id, zip_code, borough, result, date)
+    connection.execute(text("""INSERT INTO inspection_post (job_id zip_code, borough, result, date)
                                VALUES ('PC6481130', 10032, 'Manhattan', 'Passed', '2019-02-07 12:48:34')"""))
 
-    connection.execute(text("""INSERT INTO inspection_post (inspection_id, zip_code, borough, result, date)
+    connection.execute(text("""INSERT INTO inspection_post (job_id, zip_code, borough, result, date)
                                VALUES ('PC6794074', 10457, 'Bronx', 'Rat Activity', '2017-10-16 13:02:51')"""))
 
-    connection.execute(text("""INSERT INTO inspection_post (inspection_id, zip_code, borough, result, date)
+    connection.execute(text("""INSERT INTO inspection_post (job_id, zip_code, borough, result, date)
                                VALUES ('PC7229376', 11237, 'Brooklyn', 'Passed', '2019-06-20 16:02:23')"""))
 
-    connection.execute(text("""INSERT INTO inspection_post (inspection_id, zip_code, borough, result, date)
+    connection.execute(text("""INSERT INTO inspection_post (job_id, zip_code, borough, result, date)
                                VALUES ('PC7376230', 11385, 'Queens', 'Bait applied', '2017-08-01 09:45:13')"""))
 
-    connection.execute(text("""INSERT INTO inspection_post (inspection_id, zip_code, borough, result, date)
+    connection.execute(text("""INSERT INTO inspection_post (job_id, zip_code, borough, result, date)
                                VALUES ('PC7552325', 10458, 'Bronx', 'Passed', '2013-07-18 15:46:40')"""))
 
-    connection.execute(text("""INSERT INTO inspection_post (inspection_id, zip_code, borough, result, date)
+    connection.execute(text("""INSERT INTO inspection_post (job_id, zip_code, borough, result, date)
                                VALUES ('PC6543128', 10453, 'Bronx', 'Rat Activity', '2012-01-25 14:45:24')"""))
 
-    connection.execute(text("""INSERT INTO inspection_post (inspection_id, zip_code, borough, result, date)
+    connection.execute(text("""INSERT INTO inspection_post (job_id, zip_code, borough, result, date)
                                VALUES ('PC6986296', 11219, 'Brooklyn', 'Failed for Other', '2010-09-28 10:25:40')"""))
 
     connection.execute(text("DELETE FROM post;"))
