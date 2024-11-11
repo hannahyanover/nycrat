@@ -60,34 +60,33 @@ def do_admin_login():
 
 @app.route('/sighting')
 def sighting():
-    return "testing"
-    # engine = create_engine(DATABASEURI)
-    # with engine.connect() as connection:  # "with" ensures the connection is properly closed after use
-    #     result = connection.execute(text("""
-    #          SELECT 
-    #             prs.sighting_id,
-    #             prs.zip_code,
-    #             prs.comment AS sighting_comment,
-    #             co.text AS comment_text,
-    #             COALESCE(SUM(CASE WHEN v.up_down = TRUE THEN 1 WHEN v.up_down = FALSE THEN -1 ELSE 0 END), 0) AS like_count
-    #         FROM 
-    #             personal_rat_sighting AS prs
-    #         JOIN 
-    #             post AS p ON prs.sighting_id = p.sighting_id
-    #         LEFT JOIN 
-    #             comment_on AS co ON p.post_id = co.post_id
-    #         LEFT JOIN 
-    #             Vote AS v ON p.post_id = v.post_id
-    #         GROUP BY 
-    #             prs.sighting_id, prs.zip_code, prs.comment, co.text
-    #         ORDER BY 
-    #             prs.sighting_id;
-    #     """))
+    engine = create_engine(DATABASEURI)
+    with engine.connect() as connection:  # "with" ensures the connection is properly closed after use
+        result = connection.execute(text("""
+             SELECT 
+                prs.sighting_id,
+                prs.zip_code,
+                prs.comment AS sighting_comment,
+                co.text AS comment_text,
+                COALESCE(SUM(CASE WHEN v.up_down = TRUE THEN 1 WHEN v.up_down = FALSE THEN -1 ELSE 0 END), 0) AS like_count
+            FROM 
+                personal_rat_sighting AS prs
+            JOIN 
+                post AS p ON prs.sighting_id = p.sighting_id
+            LEFT JOIN 
+                comment_on AS co ON p.post_id = co.post_id
+            LEFT JOIN 
+                Vote AS v ON p.post_id = v.post_id
+            GROUP BY 
+                prs.sighting_id, prs.zip_code, prs.comment, co.text
+            ORDER BY 
+                prs.sighting_id;
+        """))
         
-    #     columns = result.keys()  # Get column names (headers)
-    #     formatted_result = [dict(zip(columns, row)) for row in result.fetchall()]
+        columns = result.keys()  # Get column names (headers)
+        formatted_result = [dict(zip(columns, row)) for row in result.fetchall()]
     
-    # return render_template("personal_sighting.html", data=formatted_result)
+    return render_template("personal_sighting.html", data=formatted_result)
 
 @app.route('/search_sighting', methods=['POST'])
 def search_sighting():
