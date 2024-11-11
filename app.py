@@ -409,7 +409,7 @@ def search_inspection():
         columns = result.keys()
         formatted_result = [dict(zip(columns, row)) for row in result.fetchall()]
     
-    return render_template("inspection_results.html", data=formatted_result)
+    return render_template("inspection_post.html", data=formatted_result)
         
 
 @app.route('/qa')
