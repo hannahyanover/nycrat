@@ -18,13 +18,31 @@ engine = create_engine(DATABASEURI)
 with engine.connect() as connection:  # "with" ensures the connection is properly closed
 
     connection.execute(text("""DROP TABLE IF EXISTS personal_rat_sighting CASCADE;"""))
+    connection.execute(text("""DROP TABLE IF EXISTS inspection_post CASCADE;"""))
+    connection.execute(text("""DROP TABLE IF EXISTS post CASCADE;"""))
+    
     connection.execute(text("""CREATE TABLE personal_rat_sighting (
         sighting_id int PRIMARY KEY,
         zip_code int,
         comment text
     );"""))
-    connection.execute(text("DELETE FROM personal_rat_sighting;"))
 
+    connection.execute(text("""CREATE TABLE inspection_post (
+        job_id text PRIMARY KEY,
+        zip_code int,
+        borough text,
+        result text,
+        date date
+    );"""))
+
+    connection.execute(text("""CREATE TABLE post (
+        post_id int PRIMARY KEY,
+        sighting_id int REFERENCES personal_rat_sighting,
+        job_id text REFERENCES inspection_post,
+        CHECK ((sighting_id IS NULL OR job_id IS NULL) AND (sighting_id IS NOT NULL OR job_id IS NOT NULL))
+    );"""))
+    
+    connection.execute(text("DELETE FROM personal_rat_sighting;"))
     connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(1, 10458, 'Saw a rat near Fordham Road in the Bronx.');"""))  # Zip code 10458 (Bronx)
     connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(2, 10022, 'Spotted a rat near Grand Central Terminal in Midtown Manhattan.');"""))  # Zip code 10022 (Midtown Manhattan)
     connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(3, 11206, 'Spotted a rat in the Bushwick area of Brooklyn.');"""))  # Zip code 11206 (Bushwick, Brooklyn)
@@ -34,7 +52,9 @@ with engine.connect() as connection:  # "with" ensures the connection is properl
     connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(7, 11385, 'Saw a rat near Wyckoff Avenue in Ridgewood.');"""))  # Zip code 11385 (Ridgewood, Queens)
     connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(8, 10458, 'A rat crossed the street near the Bronx Zoo.');"""))  # Zip code 10458 (Bronx Zoo area)
     connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(9, 10453, 'Saw a rat near 170th Street in the Bronx.');"""))  # Zip code 10453 (Bronx)
-    connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(10, 11219, 'Spotted a rat near the Sunset Park area of Brooklyn.');"""))  # Zip code 11219 (Sunset Park, Brooklyn) 
+    connection.execute(text("""INSERT INTO personal_rat_sighting VALUES(10, 11219, 'Spotted a rat near the Sunset Park area of Brooklyn.');"""))  # Zip code 11219 (Sunset Park, Brooklyn)
+
+    
 
 @app.before_request
 def before_request():
