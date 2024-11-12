@@ -113,7 +113,7 @@ def update_like():
     data = request.get_json()
     post_id = data['post_id']
     action = data['action']
-    user_email = 'admin'  # Assuming user email is stored in session
+    email_address = 'admin'  # Assuming user email is stored in session
 
     # Determine the 'up_down' value for the vote
     up_down = True if action == 'add' else False  # 1 for like, -1 for dislike
@@ -125,8 +125,8 @@ def update_like():
         result = connection.execute(text("""
             SELECT up_down 
             FROM Vote 
-            WHERE post_id = :post_id AND user_email = :user_email
-        """), {'post_id': post_id, 'user_email': user_email})
+            WHERE post_id = :post_id AND email_address = :email_address
+        """), {'post_id': post_id, 'email_address': email_address})
         
         current_vote = result.fetchone()
         
@@ -136,14 +136,14 @@ def update_like():
                 connection.execute(text("""
                     UPDATE Vote
                     SET up_down = :up_down
-                    WHERE post_id = :post_id AND user_email = :user_email
-                """), {'post_id': post_id, 'user_email': user_email, 'up_down': up_down})
+                    WHERE post_id = :post_id AND email_address = :email_address
+                """), {'post_id': post_id, 'email_address': email_address, 'up_down': up_down})
         else:
             # If no vote exists, insert a new one
             connection.execute(text("""
-                INSERT INTO Vote (user_email, post_id, up_down)
-                VALUES (:user_email, :post_id, :up_down)
-            """), {'user_email': user_email, 'post_id': post_id, 'up_down': up_down})
+                INSERT INTO Vote (email_address, post_id, up_down)
+                VALUES (:email_address, :post_id, :up_down)
+            """), {'email_address': email_address, 'post_id': post_id, 'up_down': up_down})
 
         # After updating the vote, get the new like count
         result = connection.execute(text("""
