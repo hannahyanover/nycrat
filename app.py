@@ -121,6 +121,7 @@ def update_like():
     # Check if the user has already voted
     engine = create_engine(DATABASEURI)
     with engine.connect() as connection:
+        connection.execute("""INSERT INTO Email (email_address, username) VALUES ('admin', 'admin');""")
         # Check if the user already voted for this post
         result = connection.execute(text("""
             SELECT up_down 
