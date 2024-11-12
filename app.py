@@ -13,7 +13,7 @@ DB_SERVER = "w4111.cisxo09blonu.us-east-1.rds.amazonaws.com"
 
 DATABASEURI = "postgresql://zz3306:hry2106@w4111.cisxo09blonu.us-east-1.rds.amazonaws.com/w4111"
 
-engine = create_engine(DATABASEURI)
+engine = create_engine(DATABASEURI) 
 
 @app.before_request
 def before_request():
