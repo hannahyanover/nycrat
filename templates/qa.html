@@ -9,7 +9,6 @@
 
     <!-- Form to Post a New Question -->
     <form action="/post_question" method="POST">
-        <input type="email" name="user_email" placeholder="Your Email" required>
         <textarea name="question_text" placeholder="Your Question" required></textarea>
         <button type="submit">Post Question</button>
     </form>
@@ -17,13 +16,11 @@
     <!-- Display All Questions with Answers -->
     {% for question_id, question in questions.items() %}
         <div class="question">
-            <p><strong>{{ question.user_email }}</strong> asked:</p>
-            <p>{{ question.question_text }}</p>
-            <p><em>{{ question.created_at }}</em></p>
+            <p><strong>Question:</strong> {{ question.question_text }}</p>
+            <p><em>Asked on {{ question.created_at }}</em></p>
 
             <!-- Form to Post an Answer to this Question -->
             <form action="/post_answer/{{ question_id }}" method="POST">
-                <input type="email" name="user_email" placeholder="Your Email" required>
                 <textarea name="answer_text" placeholder="Your Answer" required></textarea>
                 <button type="submit">Post Answer</button>
             </form>
@@ -32,9 +29,8 @@
             <h3>Answers</h3>
             {% for answer in question.answers %}
                 <div class="answer">
-                    <p><strong>{{ answer.user_email }}</strong> replied:</p>
-                    <p>{{ answer.answer_text }}</p>
-                    <p><em>{{ answer.created_at }}</em></p>
+                    <p><strong>Answer:</strong> {{ answer.answer_text }}</p>
+                    <p><em>Answered on {{ answer.created_at }}</em></p>
                     <form action="/delete_answer/{{ answer.id }}" method="POST">
                         <button type="submit">Delete</button>
                     </form>
