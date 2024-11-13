@@ -223,7 +223,42 @@ def search_inspection():
 
 @app.route('/qa')
 def qa():
-    return "Q&A Forum (Coming soon)"
+    try:
+        # Fetch all questions along with their answers
+        result = g.conn.execute("""
+            SELECT q.id AS question_id, q.user_email AS question_user, q.question_text, q.created_at AS question_created,
+                   a.id AS answer_id, a.user_email AS answer_user, a.answer_text, a.created_at AS answer_created
+            FROM Questions q
+            LEFT JOIN Answers a ON q.id = a.question_id
+            ORDER BY q.created_at, a.created_at
+        """)
+
+        # Organize data into a dictionary with questions and answers
+        questions = {}
+        for row in result:
+            question_id = row['question_id']
+            if question_id not in questions:
+                questions[question_id] = {
+                    'id': question_id,
+                    'user_email': row['question_user'],
+                    'question_text': row['question_text'],
+                    'created_at': row['question_created'],
+                    'answers': []
+                }
+            if row['answer_id']:
+                questions[question_id]['answers'].append({
+                    'id': row['answer_id'],
+                    'user_email': row['answer_user'],
+                    'answer_text': row['answer_text'],
+                    'created_at': row['answer_created']
+                })
+
+        return render_template('qa.html', questions=questions)
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return "An error occurred while loading the Q&A Forum"
+
 
 if __name__ == "__main__":
   import click
