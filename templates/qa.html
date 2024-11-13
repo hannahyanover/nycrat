@@ -74,7 +74,7 @@
         <!-- Form to Post a New Question -->
         <h2>Post a New Question</h2>
         <div class="question-form">
-            <form action="/post_question" method="POST">
+            <form action="/qa" method="POST">
                 <textarea name="question_text" placeholder="Enter your question here..." required></textarea>
                 <button type="submit">Post Question</button>
             </form>
@@ -99,7 +99,8 @@
 
                 <!-- Form to Post a Reply to this Question -->
                 <div class="reply-form">
-                    <form action="/post_reply/{{ question_id }}" method="POST">
+                    <form action="/qa" method="POST">
+                        <input type="hidden" name="question_id" value="{{ question_id }}">
                         <textarea name="reply_text" placeholder="Enter your reply here..." required></textarea>
                         <button type="submit">Post Reply</button>
                     </form>
