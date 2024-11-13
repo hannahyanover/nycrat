@@ -7,37 +7,44 @@
 <body>
     <h1>Q&A Forum</h1>
 
+    <!-- Home Button -->
+    <a href="/">Home</a>
+    <hr>
+
     <!-- Form to Post a New Question -->
+    <h2>Post a New Question</h2>
     <form action="/post_question" method="POST">
+        <input type="email" name="user_email" placeholder="Your Email" required>
         <textarea name="question_text" placeholder="Your Question" required></textarea>
         <button type="submit">Post Question</button>
     </form>
+    <hr>
 
-    <!-- Display All Questions with Answers -->
+    <!-- Display All Questions with Replies -->
+    <h2>Questions</h2>
     {% for question_id, question in questions.items() %}
         <div class="question">
             <p><strong>Question:</strong> {{ question.question_text }}</p>
-            <p><em>Asked on {{ question.created_at }}</em></p>
+            <p><em>Asked by {{ question.user_email }} on {{ question.created_at }}</em></p>
 
-            <!-- Form to Post an Answer to this Question -->
-            <form action="/post_answer/{{ question_id }}" method="POST">
-                <textarea name="answer_text" placeholder="Your Answer" required></textarea>
-                <button type="submit">Post Answer</button>
+            <!-- Form to Post a Reply to this Question -->
+            <h3>Post a Reply</h3>
+            <form action="/post_reply/{{ question_id }}" method="POST">
+                <input type="email" name="user_email" placeholder="Your Email" required>
+                <textarea name="reply_text" placeholder="Your Reply" required></textarea>
+                <button type="submit">Post Reply</button>
             </form>
 
-            <!-- List of Answers for this Question -->
-            <h3>Answers</h3>
-            {% for answer in question.answers %}
-                <div class="answer">
-                    <p><strong>Answer:</strong> {{ answer.answer_text }}</p>
-                    <p><em>Answered on {{ answer.created_at }}</em></p>
-                    <form action="/delete_answer/{{ answer.id }}" method="POST">
-                        <button type="submit">Delete</button>
-                    </form>
+            <!-- List of Replies for this Question -->
+            <h4>Replies</h4>
+            {% for reply in question.replies %}
+                <div class="reply">
+                    <p><strong>Reply:</strong> {{ reply.reply_text }}</p>
+                    <p><em>Replied by {{ reply.user_email }} on {{ reply.created_at }}</em></p>
                 </div>
             {% endfor %}
+            <hr>
         </div>
-        <hr>
     {% endfor %}
 </body>
 </html>
