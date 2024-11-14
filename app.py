@@ -221,43 +221,63 @@ def search_inspection():
     return render_template("inspection_post.html", data=formatted_result)
         
 
-@app.route('/qa')
-def qa():
-    try:
-        # Fetch all questions along with their answers
-        result = g.conn.execute("""
-            SELECT q.id AS question_id, q.user_email AS question_user, q.question_text, q.created_at AS question_created,
-                   a.id AS answer_id, a.user_email AS answer_user, a.answer_text, a.created_at AS answer_created
-            FROM Questions q
-            LEFT JOIN Answers a ON q.id = a.question_id
-            ORDER BY q.created_at, a.created_at
-        """)
+from sqlalchemy import text  # Ensure this import is present at the top of your file
 
-        # Organize data into a dictionary with questions and answers
+@app.route('/qa', methods=['GET', 'POST'])
+def qa():
+    """Display the Q&A forum and handle question and reply submissions."""
+    try:
+        # Check if it's a POST request to handle form submissions
+        if request.method == 'POST':
+            if 'question_text' in request.form:
+                # Handle posting a new question
+                question_text = request.form['question_text']
+                g.conn.execute(text("INSERT INTO questions (question_text) VALUES (:question_text)"),
+                               {'question_text': question_text})
+            elif 'reply_text' in request.form and 'question_id' in request.form:
+                # Handle posting a reply to a question
+                reply_text = request.form['reply_text']
+                question_id = request.form['question_id']
+                g.conn.execute(text("INSERT INTO replies (question_id, reply_text) VALUES (:question_id, :reply_text)"),
+                               {'question_id': question_id, 'reply_text': reply_text})
+
+            # Redirect to /qa to clear the form submission and prevent duplicate submissions
+            return redirect('/qa')
+
+        # Fetch all questions with their replies
+        result = g.conn.execute(text("""
+            SELECT q.id AS question_id, q.question_text, q.created_at AS question_created,
+                   r.id AS reply_id, r.reply_text, r.created_at AS reply_created
+            FROM questions q
+            LEFT JOIN replies r ON q.id = r.question_id
+            ORDER BY q.created_at, r.created_at
+        """))
+
+        # Organize data into a dictionary with questions and replies
         questions = {}
         for row in result:
             question_id = row['question_id']
             if question_id not in questions:
                 questions[question_id] = {
                     'id': question_id,
-                    'user_email': row['question_user'],
                     'question_text': row['question_text'],
                     'created_at': row['question_created'],
-                    'answers': []
+                    'replies': []
                 }
-            if row['answer_id']:
-                questions[question_id]['answers'].append({
-                    'id': row['answer_id'],
-                    'user_email': row['answer_user'],
-                    'answer_text': row['answer_text'],
-                    'created_at': row['answer_created']
+            if row['reply_id']:
+                questions[question_id]['replies'].append({
+                    'id': row['reply_id'],
+                    'reply_text': row['reply_text'],
+                    'created_at': row['reply_created']
                 })
 
         return render_template('qa.html', questions=questions)
 
     except Exception as e:
-        print(f"Error: {e}")
-        return "An error occurred while loading the Q&A Forum"
+        print("An error occurred:", str(e))
+        error_message = f"An error occurred while loading the Q&A Forum: {str(e)}"
+        return render_template_string('<h1>{{ error_message }}</h1>', error_message=error_message)
+
 
 
 if __name__ == "__main__":
