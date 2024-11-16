@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
 from flask import Flask, request, render_template, g, redirect, Response, jsonify, render_template_string, flash, session, abort
@@ -6,14 +7,15 @@ from flask import Flask, request, render_template, g, redirect, Response, jsonif
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
 
-DB_USER = "zz3306"
-DB_PASSWORD = "hry2106"
+DB_USER = "hry2106"
+DB_PASSWORD = "getsmart"
 
 DB_SERVER = "w4111.cisxo09blonu.us-east-1.rds.amazonaws.com"
 
-DATABASEURI = "postgresql://zz3306:hry2106@w4111.cisxo09blonu.us-east-1.rds.amazonaws.com/w4111"
+DATABASEURI = "postgresql://hry2106:getsmart@w4111.cisxo09blonu.us-east-1.rds.amazonaws.com/w4111"
 
-engine = create_engine(DATABASEURI) 
+
+engine = create_engine(DATABASEURI, connect_args={'connect_timeout': 5})
 
 @app.before_request
 def before_request():
@@ -60,14 +62,13 @@ def do_admin_login():
 
 @app.route('/sighting')
 def sighting():
-    engine = create_engine(DATABASEURI)
-    with engine.connect() as connection:  # "with" ensures the connection is properly closed after use
-        result = connection.execute(text("""
+        result = g.conn.execute(text("""
              SELECT 
                 prs.sighting_id,
                 prs.zip_code,
                 prs.comment AS sighting_comment,
-                co.text AS comment_text,
+                co.text AS comment,
+                p.post_id as post_id, 
                 COALESCE(SUM(CASE WHEN v.up_down = TRUE THEN 1 WHEN v.up_down = FALSE THEN -1 ELSE 0 END), 0) AS like_count
             FROM 
                 personal_rat_sighting AS prs
@@ -78,205 +79,544 @@ def sighting():
             LEFT JOIN 
                 Vote AS v ON p.post_id = v.post_id
             GROUP BY 
-                prs.sighting_id, prs.zip_code, prs.comment, co.text
+                prs.sighting_id, prs.zip_code, prs.comment, co.text, p.post_id
             ORDER BY 
                 prs.sighting_id;
         """))
-        
-        columns = result.keys()  # Get column names (headers)
-        formatted_result = [dict(zip(columns, row)) for row in result.fetchall()]
+        # print(result.fetchall)
+
+        columns = result.keys()
+        # rows = result.fetchall()
+        rows = result.mappings() 
+
+        # test = g.conn.execute(text("SELECT * FROM personal_rat_sighting")).fetchall()
+        # print(test)
     
-    return render_template("personal_sighting.html", data=formatted_result)
+        formatted_result = []
+        current_post = None
+        
+        for row in rows:
+            sighting_id = row['sighting_id']  # Accessing by column name works now
+            if current_post is None or current_post['sighting_id'] != sighting_id:
+                if current_post:
+                    formatted_result.append(current_post)
+                current_post = {
+                    'sighting_id': sighting_id,
+                    'zip_code': row['zip_code'],
+                    'sighting_comment': row['sighting_comment'],
+                    'like_count': row['like_count'],
+                    'post_id': row['post_id'], 
+                
+                    'comments': []
+                }
+            if row['comment']:  # If there is a comment for this row
+                current_post['comments'].append({'comment_text': row['comment']})
+
+        if current_post:
+            formatted_result.append(current_post)
+    
+        return render_template("personal_sighting.html", data=formatted_result)
+
+        
+        # columns = result.keys()  
+        # formatted_result = [dict(zip(columns, row)) for row in result.fetchall()]
+    
+        # return render_template("personal_sighting.html", data=formatted_result)
 
 @app.route('/search_sighting', methods=['POST'])
 def search_sighting():
-    # Get the name from the form submission
     zip_code = request.form['zip_code']
 
     try:
-        zip_code = int(request.form['zip_code'])  # Converts input to integer if possible
+        zip_code = int(request.form['zip_code']) 
     except ValueError:
-        # If conversion fails, redirect or render an error message
         return render_template("personal_sighting.html", data=[])
     
-    engine = create_engine(DATABASEURI)
-    with engine.connect() as connection:  # "with" ensures the connection is properly closed after use
-         query = text("SELECT * FROM personal_rat_sighting WHERE zip_code = :zip_code")
-         result = connection.execute(query, {"zip_code": zip_code})
-         columns = result.keys()  # Get column names (headers)
-         formatted_result = [dict(zip(columns, row)) for row in result.fetchall()]
+    query = text("""
+        SELECT 
+                prs.sighting_id,
+                prs.zip_code,
+                prs.comment AS sighting_comment,
+                co.text AS comment,
+                p.post_id as post_id, 
+                COALESCE(SUM(CASE WHEN v.up_down = TRUE THEN 1 WHEN v.up_down = FALSE THEN -1 ELSE 0 END), 0) AS like_count 
+        FROM 
+                personal_rat_sighting AS prs
+        JOIN 
+                post AS p ON prs.sighting_id = p.sighting_id
+        LEFT JOIN 
+                comment_on AS co ON p.post_id = co.post_id
+        LEFT JOIN 
+                Vote AS v ON p.post_id = v.post_id
+        WHERE zip_code = :zip_code
+        GROUP BY 
+                prs.sighting_id, prs.zip_code, prs.comment, co.text, p.post_id
+        ORDER BY 
+                prs.sighting_id;
+        """)
+    result = g.conn.execute(query, {"zip_code": zip_code})
+    columns = result.keys() 
+    rows = result.mappings() 
+    
+    formatted_result = []
+    current_post = None
+        
+    for row in rows:
+            sighting_id = row['sighting_id']  
+            if current_post is None or current_post['sighting_id'] != sighting_id:
+                if current_post:
+                    formatted_result.append(current_post)
+                current_post = {
+                    'sighting_id': sighting_id,
+                    'zip_code': row['zip_code'],
+                    'sighting_comment': row['sighting_comment'],
+                    'like_count': row['like_count'],
+                    'post_id': row['post_id'], 
+                    'comments': []
+                }
+            if row['comment']:  
+                current_post['comments'].append({'comment_text': row['comment']})
+
+    if current_post:
+            formatted_result.append(current_post)
+    
     return render_template("personal_sighting.html", data=formatted_result)
+    # formatted_result = [dict(zip(columns, row)) for row in result.fetchall()]
+    # return render_template("personal_sighting.html", data=formatted_result)
 
 
 @app.route('/update_like', methods=['POST'])
 def update_like():
+    print("update like in .py")
     data = request.get_json()
     post_id = data['post_id']
     action = data['action']
-    email_address = 'admin'  # Assuming user email is stored in session
-
-    # Determine the 'up_down' value for the vote
-    up_down = True if action == 'add' else False  # 1 for like, -1 for dislike
-
-    # Check if the user has already voted
-    engine = create_engine(DATABASEURI)
-    with engine.connect() as connection:
-        connection.execute(text("""INSERT INTO Email (email_address, name) VALUES ('admin', 'admin');"""))
-        # Check if the user already voted for this post
-        result = connection.execute(text("""
+    email_address = 'admin'  
+    
+    up_down = True if action == 'add' else False  
+    
+    result = g.conn.execute(text("""
             SELECT up_down 
             FROM Vote 
             WHERE post_id = :post_id AND email_address = :email_address
         """), {'post_id': post_id, 'email_address': email_address})
         
-        current_vote = result.fetchone()
+    current_vote = result.fetchone()
         
-        if current_vote:
-            # If a vote already exists, we need to update it
+    if current_vote:
             if current_vote[0] != up_down:
-                connection.execute(text("""
+                g.conn.execute(text("""
                     UPDATE Vote
                     SET up_down = :up_down
                     WHERE post_id = :post_id AND email_address = :email_address
-                """), {'post_id': post_id, 'email_address': email_address, 'up_down': up_down})
-        else:
-            # If no vote exists, insert a new one
-            connection.execute(text("""
+                """), {'post_id': post_id, 'email_address': email_address
+                       , 'up_down': up_down})
+    else:
+            g.conn.execute(text("""
                 INSERT INTO Vote (email_address, post_id, up_down)
                 VALUES (:email_address, :post_id, :up_down)
             """), {'email_address': email_address, 'post_id': post_id, 'up_down': up_down})
-
-        # After updating the vote, get the new like count
-        result = connection.execute(text("""
+    result2 = g.conn.execute(text("""
             SELECT 
                 COALESCE(SUM(CASE WHEN v.up_down = TRUE THEN 1 WHEN v.up_down = FALSE THEN -1 ELSE 0 END), 0) AS like_count
             FROM 
                 Vote AS v
             WHERE v.post_id = :post_id
         """), {'post_id': post_id})
+    
+    g.conn.commit(); 
 
-        new_like_count = result.scalar()
+    new_like_count = result2.scalar()
+    
 
     return jsonify({'new_like_count': new_like_count})
 
+@app.route('/submit_comment', methods=['POST'])
+def submit_comment():
+    data = request.json
+    post_id = data.get('post_id')
+    comment_text = data.get('comment_text')
+    
+    result = g.conn.execute(text("""
+        SELECT * FROM post WHERE post_id = :post_id
+    """), {"post_id": post_id})
+
+    post = result.fetchone()
+    if not post:
+        return jsonify({"error": "Post not found"}), 404
+
+    g.conn.execute(text("""
+        INSERT INTO comment_on (text, post_id)
+        VALUES (:comment_text, :post_id) 
+    """), {"post_id": post_id, "comment_text": comment_text})
+    g.conn.commit()
+
+    return jsonify({"message": "Comment added successfully"})
+
+@app.route('/add_sighting', methods=['POST'])
+def add_sighting():
+        # test = g.conn.execute(text("SELECT * FROM personal_rat_sighting")).fetchall()
+        # print(test)
+       
+        data = request.get_json()
+        zip_code2 = data['zip_code']
+        try:
+            zip_code = int(zip_code2)
+            if len(zip_code2)!= 5 :
+                return jsonify({'error': 'Invalid zip code'}), 400
+        except: 
+            return jsonify({'error': 'Invalid zip code'}), 400
+            
+        comment = data['sighting_comment']
+        result = g.conn.execute(text("SELECT MAX(sighting_id) FROM personal_rat_sighting"))
+        max_sighting_id = result.fetchone()[0]
+ 
+        
+        if max_sighting_id is None:
+            sighting_id = 1
+        else:
+            sighting_id = max_sighting_id + 1
+
+
+        job_id = None
+        result2 = g.conn.execute(text("SELECT MAX(post_id) FROM post"))
+        max_post_id = result2.fetchone()[0]
+    
+
+
+        if max_post_id is None:
+            post_id = 1
+        else:
+            post_id = max_post_id + 1
+
+   
+ 
+
+        query = text("""
+                INSERT INTO personal_rat_sighting (sighting_id, zip_code, comment)
+                VALUES (:sighting_id, :zip_code, :comment)
+        """)
+        g.conn.execute(query, {'sighting_id': sighting_id, 'zip_code': zip_code, 'comment': comment})
+        query2 = text("""
+                INSERT INTO post (post_id, sighting_id, job_id)
+                VALUES (:post_id, :sighting_id, :job_id)
+        """)
+        g.conn.execute(query2, {'post_id': post_id, 'sighting_id': sighting_id, 'job_id': job_id})
+
+        g.conn.commit()
+        test2 = g.conn.execute(text("SELECT * FROM personal_rat_sighting")).fetchall()
+        print(test2)
+        
+        return jsonify({'message': 'Sighting added successfully!'}), 200
 
 @app.route('/report')
 def report():
-    engine = create_engine(DATABASEURI)
-    with engine.connect() as connection:  # "with" ensures the connection is properly closed after use
-        result = connection.execute(text("""
+        result = g.conn.execute(text("""
            SELECT 
-                i.job_id, 
+                i.job_id as job_id, 
                 i.zip_code, 
                 i.borough, 
                 i.result, 
                 i.date,
-                co.text as comment_text   
+                p.post_id as post_id,
+                co.text as comment,  
+                COALESCE(SUM(CASE WHEN v.up_down = TRUE THEN 1 WHEN v.up_down = FALSE THEN -1 ELSE 0 END), 0) AS like_count                                                            
             FROM 
                 inspection_post AS i
             JOIN 
                 post AS p ON i.job_id = p.job_id
             LEFT JOIN 
                 comment_on AS co ON p.post_id = co.post_id
+            LEFT JOIN 
+                Vote as v on p.post_id = v.post_id
+            GROUP BY 
+                i.job_id, i.zip_code, i.borough, i.result, i.date, p.post_id, co.text 
+            ORDER BY 
+                p.post_id
         """))
-        
-        columns = result.keys()  # Get column names (headers)
-        formatted_result = [dict(zip(columns, row)) for row in result.fetchall()]
+        columns = result.keys()
+        # rows = result.fetchall()
+        rows = result.mappings() 
+
+        # test = g.conn.execute(text("SELECT * FROM personal_rat_sighting")).fetchall()
+        # print(test)
     
-    return render_template("inspection_post.html", data=formatted_result)
+        formatted_result = []
+        current_post = None
+        
+        for row in rows:
+            job_id = row['job_id']  # Accessing by column name works now
+            if current_post is None or current_post['job_id'] != job_id:
+                if current_post:
+                    formatted_result.append(current_post)
+                current_post = {
+                    'job_id': job_id,
+                    'zip_code': row['zip_code'],
+                    'borough': row['borough'],
+                    'result': row['result'],
+                    'like_count': row['like_count'],
+                    'post_id': row['post_id'], 
+                    'date': row['date'], 
+                
+                    'comments': []
+                }
+            if row['comment']: 
+                current_post['comments'].append({'comment_text': row['comment']})
+
+        if current_post:
+            formatted_result.append(current_post)
+    
+        return render_template("inspection_post.html", data=formatted_result)
+        
+        # columns = result.keys()  
+        # formatted_result = [dict(zip(columns, row)) for row in result.fetchall()]
+    
+        # return render_template("inspection_post.html", data=formatted_result)
 
 @app.route('/search_inspection', methods=['POST'])
 def search_inspection():
-    search = request.form['search']
-    engine = create_engine(DATABASEURI)
+        search = request.form['search']
     
-    with engine.connect() as connection:
         try:
-            # Try to convert the search input to an integer (for zip code search)
             search_int = int(search)
             query = text("""
-                SELECT * FROM inspection_post
-                WHERE zip_code = :search_query
+            SELECT 
+                i.job_id as job_id, 
+                i.zip_code, 
+                i.borough, 
+                i.result, 
+                i.date,
+                p.post_id as post_id, 
+                co.text as comment, 
+                COALESCE(SUM(CASE WHEN v.up_down = TRUE THEN 1 WHEN v.up_down = FALSE THEN -1 ELSE 0 END), 0) AS like_count                                                            
+  
+            FROM 
+                inspection_post AS i
+            JOIN 
+                post AS p ON i.job_id = p.job_id
+            LEFT JOIN 
+                comment_on AS co ON p.post_id = co.post_id
+            LEFT JOIN 
+                VOte as v ON p.post_id = v.post_id
+            WHERE zip_code = :search_query
+            GROUP BY 
+                i.job_id, i.zip_code, i.borough, i.result, i.date, p.post_id, co.text 
+            ORDER BY 
+                p.post_id
+
             """)
-            result = connection.execute(query, {"search_query": search_int})
+            result = g.conn.execute(query, {"search_query": search_int})
         
         except ValueError:
-            # If the input is not an integer, check if it's one of the boroughs
             boroughs = ['Manhattan', 'Brooklyn', 'Queens', 'Bronx', 'Staten Island']
+    
+            dates_query = text("SELECT DISTINCT date FROM inspection_post")
+            dates = [row[0] for row in g.conn.execute(dates_query).fetchall()]
+            
             
             if search in boroughs:
                 query = text("""
-                    SELECT * FROM inspection_post
-                    WHERE borough = :search_query
-                """)
-                result = connection.execute(query, {"search_query": search})
-            else:
-                # If input is neither an integer nor a valid borough, return no results or handle error
-                return render_template("inspection_post.html", data=[])
-        
-        # Process and display results
-        columns = result.keys()
-        formatted_result = [dict(zip(columns, row)) for row in result.fetchall()]
-    
-    return render_template("inspection_post.html", data=formatted_result)
-        
+                SELECT 
+                    i.job_id as job_id, 
+                    i.zip_code, 
+                    i.borough, 
+                    i.result, 
+                    i.date,
+                    p.post_id as post_id, 
+                    co.text as comment, 
+                    COALESCE(SUM(CASE WHEN v.up_down = TRUE THEN 1 WHEN v.up_down = FALSE THEN -1 ELSE 0 END), 0) AS like_count                                                            
+  
+                FROM 
+                    inspection_post AS i
+                JOIN 
+                    post AS p ON i.job_id = p.job_id
+                LEFT JOIN 
+                    comment_on AS co ON p.post_id = co.post_id
+                LEFT JOIN 
+                    Vote AS v ON p.post_id = v.post_id
+                WHERE borough = :search_query
+                GROUP BY 
+                    i.job_id, i.zip_code, i.borough, i.result, i.date, p.post_id, co.text 
+                ORDER BY 
+                    p.post_id
 
-from sqlalchemy import text  # Ensure this import is present at the top of your file
+                """)
+                result = g.conn.execute(query, {"search_query": search})
+            else :
+                try: 
+                    if (datetime.strptime(search, '%Y-%m-%d').date() in dates):  
+                        query = text("""
+                            SELECT 
+                                i.job_id as job_id, 
+                                i.zip_code, 
+                                i.borough, 
+                                i.result, 
+                                i.date,
+                                p.post_id as post_id, 
+                                co.text as comment,
+                                COALESCE(SUM(CASE WHEN v.up_down = TRUE THEN 1 WHEN v.up_down = FALSE THEN -1 ELSE 0 END), 0) AS like_count                                                            
+   
+                            FROM 
+                                inspection_post AS i
+                            JOIN 
+                                post AS p ON i.job_id = p.job_id
+                            LEFT JOIN 
+                                comment_on AS co ON p.post_id = co.post_id
+                            LEFT JOIN 
+                                Vote AS v ON p.post_id = v.post_id
+                            WHERE date = :search_query
+                            GROUP BY 
+                                i.job_id, i.zip_code, i.borough, i.result, i.date, p.post_id, co.text 
+                            ORDER BY 
+                                p.post_id
+
+                        """)
+                        result = g.conn.execute(query, {"search_query": search})    
+                except:
+                    return render_template("inspection_post.html", data=[])
+        
+                columns = result.keys()
+        # rows = result.fetchall()
+        rows = result.mappings() 
+
+        # test = g.conn.execute(text("SELECT * FROM personal_rat_sighting")).fetchall()
+        # print(test)
+    
+        formatted_result = []
+        current_post = None
+        
+        for row in rows:
+            job_id = row['job_id']  
+            if current_post is None or current_post['job_id'] != job_id:
+                if current_post:
+                    formatted_result.append(current_post)
+                current_post = {
+                    'job_id': job_id,
+                    'zip_code': row['zip_code'],
+                    'borough': row['borough'],
+                    'result': row['result'],
+                    'like_count': row['like_count'],
+                    'post_id': row['post_id'], 
+                    'date': row['date'], 
+                
+                    'comments': []
+                }
+            if row['comment']:  
+                current_post['comments'].append({'comment_text': row['comment']})
+
+        if current_post:
+            formatted_result.append(current_post)
+    
+        return render_template("inspection_post.html", data=formatted_result)
+  
+
+
+
+
+def tuple_to_dict(row, keys):
+    """Convert a tuple row into a dictionary using the provided keys."""
+    return dict(zip(keys, row))
+
 
 @app.route('/qa', methods=['GET', 'POST'])
 def qa():
-    """Display the Q&A forum and handle question and reply submissions."""
     try:
-        # Check if it's a POST request to handle form submissions
         if request.method == 'POST':
-            if 'question_text' in request.form:
-                # Handle posting a new question
+            # Check if this is a reply submission via AJAX
+            if request.is_json:
+                data = request.get_json()
+                if 'answer' in data and 'question_id' in data:
+                    answer = data['answer']
+                    question_id = int(data['question_id'])
+
+                    # Insert the reply into the database
+                    g.conn.execute(text("""
+                        INSERT INTO Reply (question_id, answer, time)
+                        VALUES (:question_id, :answer, CURRENT_TIMESTAMP)
+                    """), {'question_id': question_id, 'answer': answer})
+
+                    # Return a success response with reply details
+                    return jsonify({
+                        'message': 'success',
+                        'answer': answer,
+                        'time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                        'question_id': question_id
+                    })
+
+            # Handle new question submission via form
+            if 'question_text' in request.form and 'email_address' in request.form:
                 question_text = request.form['question_text']
-                g.conn.execute(text("INSERT INTO questions (question_text) VALUES (:question_text)"),
-                               {'question_text': question_text})
-            elif 'reply_text' in request.form and 'question_id' in request.form:
-                # Handle posting a reply to a question
-                reply_text = request.form['reply_text']
-                question_id = request.form['question_id']
-                g.conn.execute(text("INSERT INTO replies (question_id, reply_text) VALUES (:question_id, :reply_text)"),
-                               {'question_id': question_id, 'reply_text': reply_text})
+                email_address = request.form['email_address']
 
-            # Redirect to /qa to clear the form submission and prevent duplicate submissions
-            return redirect('/qa')
+                # Check if the email exists in the Email table
+                email_check = g.conn.execute(text("""
+                    SELECT 1 FROM Email WHERE email_address = :email_address
+                """), {'email_address': email_address}).fetchone()
 
-        # Fetch all questions with their replies
-        result = g.conn.execute(text("""
-            SELECT q.id AS question_id, q.question_text, q.created_at AS question_created,
-                   r.id AS reply_id, r.reply_text, r.created_at AS reply_created
-            FROM questions q
-            LEFT JOIN replies r ON q.id = r.question_id
-            ORDER BY q.created_at, r.created_at
-        """))
+                # Insert the email if it doesn't exist
+                if not email_check:
+                    g.conn.execute(text("""
+                        INSERT INTO Email (email_address) VALUES (:email_address)
+                    """), {'email_address': email_address})
 
-        # Organize data into a dictionary with questions and replies
+                # Insert the question into the database
+                g.conn.execute(text("""
+                    INSERT INTO QandA_has (question, email_address)
+                    VALUES (:question, :email_address)
+                """), {'question': question_text, 'email_address': email_address})
+
+                # Redirect to refresh the page and fetch all questions
+                return redirect('/qa')
+
+        # Handle GET request: Fetch all questions and their replies
+        questions_query = text("""
+            SELECT has_id AS question_id, question AS question_text, email_address AS question_email
+            FROM QandA_has
+            ORDER BY has_id
+        """)
+        replies_query = text("""
+            SELECT question_id, answer, time
+            FROM Reply
+            ORDER BY question_id, time
+        """)
+
+        questions_result = g.conn.execute(questions_query)
+        replies_result = g.conn.execute(replies_query)
+
+        # Process questions
         questions = {}
-        for row in result:
-            question_id = row['question_id']
-            if question_id not in questions:
-                questions[question_id] = {
-                    'id': question_id,
-                    'question_text': row['question_text'],
-                    'created_at': row['question_created'],
-                    'replies': []
-                }
-            if row['reply_id']:
-                questions[question_id]['replies'].append({
-                    'id': row['reply_id'],
-                    'reply_text': row['reply_text'],
-                    'created_at': row['reply_created']
+        for row in questions_result.mappings():
+            questions[row['question_id']] = {
+                'id': row['question_id'],
+                'question_text': row['question_text'],
+                'email_address': row['question_email'],
+                'replies': []
+            }
+
+        # Process replies and link to questions
+        for row in replies_result.mappings():
+            if row['question_id'] in questions:
+                questions[row['question_id']]['replies'].append({
+                    'answer': row['answer'],
+                    'time': row['time']
                 })
 
+        # Render the template with questions and replies
         return render_template('qa.html', questions=questions)
 
     except Exception as e:
-        print("An error occurred:", str(e))
-        error_message = f"An error occurred while loading the Q&A Forum: {str(e)}"
-        return render_template_string('<h1>{{ error_message }}</h1>', error_message=error_message)
+        print("Error in Q&A:", str(e))
+        return jsonify({'message': 'error', 'error': str(e)}), 500
+
+
+
+
+
+
+
+
+
+
 
 
 
