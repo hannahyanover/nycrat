@@ -55,20 +55,40 @@
             font-size: 0.9em;
             color: #777;
         }
+
+        .post-id {
+            font-size: 0.9em;
+            color: #777;
+        }
         
 
         .comment-box {
             background-color: #f9f9f9;
             border: 1px solid #ddd;
-            padding: 10px;
+            padding: 15px;  /* Increase padding for more space inside */
             border-radius: 5px;
-            margin-top: 10px;
+            margin-top: 20px;  /* Increase top margin for better separation from the post */
+            min-height: 120px;  /* Give more space for comments */
         }
+
+        .comment-box textarea {
+            width: 100%;
+            height: 100px; /* Make the textarea taller */
+            padding: 8px;
+            margin-top: 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-size: 14px;  /* Increase font size for easier reading */
+            font-style: italic;
+            color: #555;
+        }       
 
         .comment-box .comment-text {
             font-style: italic;
             color: #555;
+            font-size: 16px; 
         }
+
 
     </style>
 </head>
@@ -89,33 +109,108 @@
         </button>
 
         <form action="/search_inspection" method="POST">
-            <label for="search">Search:</label>
-            <input type="text" id="search" name="search" placeholder="Enter zipcode or borough" required>
+            <label for="search">Search by zipcode, borough or date:</label>
+            <input type="text" id="search" name="search" placeholder="Enter zipcode, borough, or date" required>
             <button type="submit">Search</button>
         </form>
 
         {% if data %}
             {% for post in data %}
                 <div class="post-box">
-                    <div class="post-id">Job Id: {{ post['job_id'] }}</div>
+                    <div class="job-id">Job Id: {{ post['job_id'] }}</div>
+                    <div class="post-id">Post Id: {{ post['post_id'] }}</div>
                     <div class="post-comment">Result: {{ post['result'] }}</div>
                     <div class="post-zipcode">Zip Code: {{ post['zip_code'] }}</div>
                     <div class="post-borough">Borough: {{ post['borough'] }}</div>
                     <div class="post-date">Date: {{ post['date'] }}</div>
-                    
-                    
-                    {% if post['comment_text'] %}
-                        <div class="comment-box">
-                            <div class="comment-text">Comment: {{ post['comment_text'] }}</div>
+                    <div class="post-likes"> 
+                        Likes: <span id="like-count-{{ post['post_id'] }}">{{ post['like_count'] }}</span>
+                    </div>
+                                                                                            
+                    <button class="like-button" data-sighting-id="{{ post['post_id'] }}" onclick="updateLikeCount(this, 'add')">Like</button>
+                    <button class="like-button" data-sighting-id="{{ post['post_id'] }}" onclick="updateLikeCount(this, 'subtract')">Dislike</button>
+                
+                    <div class="comment-box" >
+                        <h4>Comments:</h4>
+                        <div id="comment-list-{{ post['post_id'] }}">
+                            {% for comment in post.comments %}
+                                <div class="comment-text">{{ comment.comment_text }}</div>
+                            {% else %}
+                                <p>No comments yet.</p>
+                            {% endfor %} 
                         </div>
-                    {% else %}
-                        <p>No comments yet.</p>
-                    {% endif %}
+                        <textarea id="comment-text-{{ post['post_id'] }}" placeholder="Write a comment..."></textarea>
+                        <button data-sighting-id="{{ post['post_id'] }}" onclick="submitComment(this)">Post Comment</button>
+                    </div>
+                    
                 </div>
             {% endfor %}
         {% else %}
             <p>No inspection posts available.</p>
         {% endif %}
     </div>
+
+<script>
+
+    function updateLikeCount(button, action) {
+        const post_id = button.getAttribute("data-sighting-id");
+        // Prepare data to send
+        let data = { post_id: post_id, action: action };
+
+        // Send an AJAX POST request to the server
+        fetch('/update_like', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())  // Parse the JSON response
+        .then(data => {
+            // Update the like count on the page dynamically
+            let likeCountElement = document.getElementById('like-count-' + post_id);
+            likeCountElement.textContent = data.new_like_count;  // Set the new like count
+        })
+        .catch(error => console.error('Error:', error));  // Handle any errors
+    }
+
+    function submitComment(buttonElement) {
+        const post_id = buttonElement.getAttribute("data-sighting-id");
+        const commentText = document.getElementById('comment-text-' + post_id).value;
+
+        if (!commentText.trim()) {
+            alert('Please enter a comment.');
+            return;
+        }
+
+        let data = { post_id: post_id, comment_text: commentText };
+
+        fetch('/submit_comment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                alert(data.message);
+                
+                
+                const commentList = document.getElementById('comment-list-' + post_id);
+                const newComment = document.createElement('div');
+                newComment.classList.add('comment-text');
+                newComment.textContent = commentText;
+                commentList.appendChild(newComment);
+
+                
+                document.getElementById('comment-text-' + post_id).value = '';
+            } else {
+                alert('Error adding comment');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+</script>
 </body>
 </html>
