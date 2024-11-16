@@ -26,10 +26,13 @@
             background-color: #fff;
             border: 1px solid #ddd;
             border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
+            padding: 20px; /* Increase padding for more space inside */
+            margin-bottom: 20px; /* Increase bottom margin for better spacing */
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            min-height: 300px; /* Ensure there's enough height for the comment box and content */
+            width: 100%; /* Ensure it fills the container */
         }
+
 
         .post-id {
             font-weight: bold;
@@ -50,18 +53,31 @@
             font-size: 0.9em;
             color: #777;
         }
-
         .comment-box {
             background-color: #f9f9f9;
             border: 1px solid #ddd;
-            padding: 10px;
+            padding: 15px;  /* Increase padding for more space inside */
             border-radius: 5px;
-            margin-top: 10px;
+            margin-top: 20px;  /* Increase top margin for better separation from the post */
+            min-height: 120px;  /* Give more space for comments */
         }
+
+        .comment-box textarea {
+            width: 100%;
+            height: 100px; /* Make the textarea taller */
+            padding: 8px;
+            margin-top: 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-size: 14px;  /* Increase font size for easier reading */
+            font-style: italic;
+            color: #555;
+        }       
 
         .comment-box .comment-text {
             font-style: italic;
             color: #555;
+            font-size: 16px; 
         }
 
     </style>
@@ -83,31 +99,49 @@
         </button>
 
         <form action="/search_sighting" method="POST">
-            <label for="zip_code">Zipcode:</label>
+            <label for="zip_code">Search by zipcode:</label>
             <input type="text" id="zip_code" name="zip_code" placeholder="Enter zipcode to search" required>
             <button type="submit">Search</button>
         </form>
 
+        <form id="addSighting" onsubmit="event.preventDefault(); submitPost(this);">
+            <label for="zip_code">Zip Code:</label>
+            <input type="text" id="zip_code" name="zip_code" required>
+
+            <label for="sighting_comment">Sighting Comment:</label>
+            <textarea id="text" name="sighting_comment" required></textarea>
+
+            <button type="submit">Submit</button>
+        </form>
+        
+
         {% if data %}
             {% for post in data %}
                 <div class="post-box">
-                    <div class="post-id">Post ID: {{ post['sighting_id'] }}</div>
-                    <div class="post-comment">Sighting Comment: {{ post['sighting_comment'] }}</div>
+                    <div class="sighting-id">Sighting ID: {{ post['sighting_id'] }}</div>
+                    <div class="post-comment">Sighting: {{ post['sighting_comment'] }}</div>
                     <div class="post-zipcode">Zip Code: {{ post['zip_code'] }}</div>
-                    <div class="post-likes"> # 
-                        Likes: <span id="like-count-{{ post['sighting_id'] }}">{{ post['like_count'] }}</span>
+                    <div class="post-id">Post Id: {{ post['post_id'] }}</div>
+                    <div class="post-likes"> 
+                        Likes: <span id="like-count-{{ post['post_id'] }}">{{ post['like_count'] }}</span>
                     </div>
+                                                                                            
+                    <button class="like-button" data-sighting-id="{{ post['post_id'] }}" onclick="updateLikeCount(this, 'add')">Like</button>
+                    <button class="like-button" data-sighting-id="{{ post['post_id'] }}" onclick="updateLikeCount(this, 'subtract')">Dislike</button>
                     
-                    <button class="like-button" onclick="updateLikeCount({{ post['sighting_id'] }}, 'add')">Like</button>
-                    <button class="like-button" onclick="updateLikeCount({{ post['sighting_id'] }}, 'subtract')">Dislike</button> #
-                    
-                    {% if post['comment_text'] %}
-                        <div class="comment-box">
-                            <div class="comment-text">Comment: {{ post['comment_text'] }}</div>
+                    <div class="comment-box" >
+                        <h4>Comments:</h4>
+                        <div id="comment-list-{{ post['post_id'] }}">
+                            {% for comment in post.comments %}
+                                <div class="comment-text">{{ comment.comment_text }}</div>
+                            {% else %}
+                                <p>No comments yet.</p>
+                            {% endfor %} 
                         </div>
-                    {% else %}
-                        <p>No comments yet.</p>
-                    {% endif %}
+                        <textarea id="comment-text-{{ post['post_id'] }}" placeholder="Write a comment..."></textarea>
+                        <button data-sighting-id="{{ post['post_id'] }}" onclick="submitComment(this)">Post Comment</button>
+                    </div>
+            
                 </div>
             {% endfor %}
         {% else %}
@@ -115,8 +149,10 @@
         {% endif %}
     </div>
 <script>
+
     // This function sends an AJAX request to update the like count
-    function updateLikeCount(post_id, action) {
+    function updateLikeCount(button, action) {
+        const post_id = button.getAttribute("data-sighting-id");
         // Prepare data to send
         let data = { post_id: post_id, action: action };
 
@@ -136,6 +172,84 @@
         })
         .catch(error => console.error('Error:', error));  // Handle any errors
     }
+
+    function submitComment(buttonElement) {
+        const post_id = buttonElement.getAttribute("data-sighting-id");
+        const commentText = document.getElementById('comment-text-' + post_id).value;
+
+        if (!commentText.trim()) {
+            alert('Please enter a comment.');
+            return;
+        }
+
+        let data = { post_id: post_id, comment_text: commentText };
+
+        fetch('/submit_comment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                alert(data.message);
+                
+                
+                const commentList = document.getElementById('comment-list-' + post_id);
+                const newComment = document.createElement('div');
+                newComment.classList.add('comment-text');
+                newComment.textContent = commentText;
+                commentList.appendChild(newComment);
+
+                
+                document.getElementById('comment-text-' + post_id).value = '';
+            } else {
+                alert('Error adding comment');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    function submitPost(form) {
+        const zip_code = form.querySelector("input[name='zip_code']").value;
+        const sighting_comment = form.querySelector("textarea[name='sighting_comment']").value;
+
+        if (!sighting_comment.trim()) {
+            alert('Please enter a comment.');
+            return;
+        }
+        if (!zip_code.trim()) {
+            alert('Please enter a zipcode.');
+            return;
+        }
+
+        let data = { zip_code: zip_code, sighting_comment: sighting_comment };
+
+        fetch('/add_sighting', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                alert(data.message);
+                window.location.reload();
+                
+            } else {
+                alert('Error adding comment');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+
+
+    
+
+
+
+
 </script>
 
 </body>
