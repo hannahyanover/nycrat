@@ -47,6 +47,8 @@ def teardown_request(exception):
 
 @app.route('/')
 def home():
+    # testing = g.conn.execute(text("SELECT * FROM test"))
+    # print(testing.fetchall())
     if not session.get('logged_in'):
         return render_template('login.html')
     else:
@@ -92,6 +94,7 @@ def sighting():
         # test = g.conn.execute(text("SELECT * FROM personal_rat_sighting")).fetchall()
         # print(test)
     
+    # Now, we need to format this result into a list of posts, each with its own comments
         formatted_result = []
         current_post = None
         
@@ -128,7 +131,7 @@ def search_sighting():
     zip_code = request.form['zip_code']
 
     try:
-        zip_code = int(request.form['zip_code']) 
+        zip_code = int(request.form['zip_code'])  # Converts input to integer if possible
     except ValueError:
         return render_template("personal_sighting.html", data=[])
     
@@ -158,11 +161,12 @@ def search_sighting():
     columns = result.keys() 
     rows = result.mappings() 
     
+    # Now, we need to format this result into a list of posts, each with its own comments
     formatted_result = []
     current_post = None
         
     for row in rows:
-            sighting_id = row['sighting_id']  
+            sighting_id = row['sighting_id']  # Accessing by column name works now
             if current_post is None or current_post['sighting_id'] != sighting_id:
                 if current_post:
                     formatted_result.append(current_post)
@@ -174,7 +178,7 @@ def search_sighting():
                     'post_id': row['post_id'], 
                     'comments': []
                 }
-            if row['comment']:  
+            if row['comment']:  # If there is a comment for this row
                 current_post['comments'].append({'comment_text': row['comment']})
 
     if current_post:
@@ -255,9 +259,9 @@ def submit_comment():
 
 @app.route('/add_sighting', methods=['POST'])
 def add_sighting():
-        # test = g.conn.execute(text("SELECT * FROM personal_rat_sighting")).fetchall()
-        # print(test)
-       
+        test = g.conn.execute(text("SELECT * FROM personal_rat_sighting")).fetchall()
+        print(test)
+        # Get user input
         data = request.get_json()
         zip_code2 = data['zip_code']
         try:
@@ -270,7 +274,7 @@ def add_sighting():
         comment = data['sighting_comment']
         result = g.conn.execute(text("SELECT MAX(sighting_id) FROM personal_rat_sighting"))
         max_sighting_id = result.fetchone()[0]
- 
+        print(max_sighting_id)
         
         if max_sighting_id is None:
             sighting_id = 1
@@ -281,7 +285,8 @@ def add_sighting():
         job_id = None
         result2 = g.conn.execute(text("SELECT MAX(post_id) FROM post"))
         max_post_id = result2.fetchone()[0]
-    
+        print(max_post_id)
+        print(zip_code, sighting_id, comment)
 
 
         if max_post_id is None:
@@ -289,9 +294,9 @@ def add_sighting():
         else:
             post_id = max_post_id + 1
 
-   
- 
-
+        # Validate input (basic example)
+        print("zip code again: ", zip_code, type(zip_code))
+        # SQL Query to insert data
         query = text("""
                 INSERT INTO personal_rat_sighting (sighting_id, zip_code, comment)
                 VALUES (:sighting_id, :zip_code, :comment)
@@ -341,6 +346,7 @@ def report():
         # test = g.conn.execute(text("SELECT * FROM personal_rat_sighting")).fetchall()
         # print(test)
     
+    # Now, we need to format this result into a list of posts, each with its own comments
         formatted_result = []
         current_post = None
         
@@ -360,7 +366,7 @@ def report():
                 
                     'comments': []
                 }
-            if row['comment']: 
+            if row['comment']:  # If there is a comment for this row
                 current_post['comments'].append({'comment_text': row['comment']})
 
         if current_post:
@@ -482,11 +488,12 @@ def search_inspection():
         # test = g.conn.execute(text("SELECT * FROM personal_rat_sighting")).fetchall()
         # print(test)
     
+    # Now, we need to format this result into a list of posts, each with its own comments
         formatted_result = []
         current_post = None
         
         for row in rows:
-            job_id = row['job_id']  
+            job_id = row['job_id']  # Accessing by column name works now
             if current_post is None or current_post['job_id'] != job_id:
                 if current_post:
                     formatted_result.append(current_post)
@@ -501,7 +508,7 @@ def search_inspection():
                 
                     'comments': []
                 }
-            if row['comment']:  
+            if row['comment']:  # If there is a comment for this row
                 current_post['comments'].append({'comment_text': row['comment']})
 
         if current_post:
@@ -521,29 +528,41 @@ def tuple_to_dict(row, keys):
 @app.route('/qa', methods=['GET', 'POST'])
 def qa():
     try:
+        # Handle POST Requests
         if request.method == 'POST':
-            # Check if this is a reply submission via AJAX
+            # For Replies Submitted via AJAX
             if request.is_json:
                 data = request.get_json()
                 if 'answer' in data and 'question_id' in data:
                     answer = data['answer']
                     question_id = int(data['question_id'])
+                    result2 = g.conn.execute(text("SELECT MAX(reply_id) FROM Reply"))
+                    max_reply_id = result2.fetchone()[0]
+                    time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+                    if max_reply_id is None:
+                        reply_id = 1
+                    else:
+                        reply_id = max_reply_id + 1
+
 
                     # Insert the reply into the database
                     g.conn.execute(text("""
-                        INSERT INTO Reply (question_id, answer, time)
-                        VALUES (:question_id, :answer, CURRENT_TIMESTAMP)
-                    """), {'question_id': question_id, 'answer': answer})
+                        INSERT INTO Reply (reply_id, question_id, answer, time)
+                        VALUES (:reply_id, :question_id, :answer, :time )
+                    """), {'reply_id': reply_id, 'question_id': question_id, 'answer': answer, 'time': time})
 
-                    # Return a success response with reply details
+                    g.conn.commit()
+
+                    # Return a success response
                     return jsonify({
                         'message': 'success',
+                        'question_id': question_id,
                         'answer': answer,
-                        'time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                        'question_id': question_id
+                        'time': time, 
                     })
 
-            # Handle new question submission via form
+            # For New Questions Submitted via Form
             if 'question_text' in request.form and 'email_address' in request.form:
                 question_text = request.form['question_text']
                 email_address = request.form['email_address']
@@ -560,15 +579,25 @@ def qa():
                     """), {'email_address': email_address})
 
                 # Insert the question into the database
-                g.conn.execute(text("""
+                question_result = g.conn.execute(text("""
                     INSERT INTO QandA_has (question, email_address)
                     VALUES (:question, :email_address)
+                    RETURNING has_id
                 """), {'question': question_text, 'email_address': email_address})
 
-                # Redirect to refresh the page and fetch all questions
-                return redirect('/qa')
+                g.conn.commit()
 
-        # Handle GET request: Fetch all questions and their replies
+                new_question_id = question_result.scalar()
+
+                # Return a success response
+                return jsonify({
+                    'message': 'success',
+                    'question_id': new_question_id,
+                    'question_text': question_text,
+                    'email_address': email_address
+                })
+
+        # Handle GET Requests (Fetch Questions and Replies)
         questions_query = text("""
             SELECT has_id AS question_id, question AS question_text, email_address AS question_email
             FROM QandA_has
@@ -583,7 +612,7 @@ def qa():
         questions_result = g.conn.execute(questions_query)
         replies_result = g.conn.execute(replies_query)
 
-        # Process questions
+        # Organize questions and replies
         questions = {}
         for row in questions_result.mappings():
             questions[row['question_id']] = {
@@ -593,7 +622,6 @@ def qa():
                 'replies': []
             }
 
-        # Process replies and link to questions
         for row in replies_result.mappings():
             if row['question_id'] in questions:
                 questions[row['question_id']]['replies'].append({
@@ -607,11 +635,6 @@ def qa():
     except Exception as e:
         print("Error in Q&A:", str(e))
         return jsonify({'message': 'error', 'error': str(e)}), 500
-
-
-
-
-
 
 
 
