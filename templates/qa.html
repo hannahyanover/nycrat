@@ -2,111 +2,185 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Q&A Forum</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
-            line-height: 1.6;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
         }
-        h1, h2 {
-            color: #333;
-        }
+
         .container {
             max-width: 800px;
             margin: 0 auto;
         }
-        .button {
-            margin-bottom: 20px;
-            display: inline-block;
-            color: #007BFF;
-            text-decoration: none;
-        }
-        .question-form, .reply-form {
-            margin-top: 20px;
-            padding: 10px;
+
+        .question-box {
+            background-color: #fff;
             border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .reply-box {
             background-color: #f9f9f9;
-            border-radius: 5px;
-        }
-        .question, .reply {
-            margin-top: 20px;
+            border: 1px solid #ddd;
             padding: 10px;
-            border-bottom: 1px solid #eee;
+            border-radius: 5px;
+            margin-top: 10px;
         }
-        .question-title {
-            font-weight: bold;
-        }
-        .reply {
-            margin-left: 20px;
-        }
-        .timestamp {
-            color: #666;
-            font-size: 0.9em;
-        }
+
         textarea {
             width: 100%;
             padding: 8px;
-            margin-top: 5px;
-            resize: vertical;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-size: 14px;
         }
+
         button {
-            margin-top: 10px;
-            padding: 8px 16px;
             background-color: #007BFF;
-            color: #fff;
+            color: white;
             border: none;
-            cursor: pointer;
+            padding: 10px;
             border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
         }
+
         button:hover {
             background-color: #0056b3;
+        }
+
+        .home-button {
+            background-color: #28a745;
+            margin-bottom: 20px;
+        }
+
+        .home-button:hover {
+            background-color: #218838;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Q&A Forum</h1>
+        <!-- <button onclick="location.href='/'" class="home-button">Home</button> -->
+        <button onclick="location.href='/sighting'" style="background-color: #007BFF; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-right: 5px;">
+            Personal Rat Sighting
+        </button>
+        <button onclick="location.href='/report'" style="background-color: #007BFF; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-right: 5px;">
+            Inspection Posts
+        </button>
+        <button onclick="location.href='/qa'" style="background-color: #007BFF; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+            Q&A Forum
+        </button>
+        <button onclick="location.href='/'" style="background-color: #007BFF; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+            Home
+        </button>
 
-        <!-- Home Button -->
-        <a href="/" class="button">Home</a>
+        <form id="questionForm">
+            <h2>Ask a New Question</h2>
+            <textarea id="question_text" name="question_text" required placeholder="Enter your question..."></textarea><br>
+            <input type="email" id="email_address" name="email_address" required placeholder="Your Email"><br>
+            <button type="submit">Submit Question</button>
+        </form>
+        <hr>
 
-        <!-- Form to Post a New Question -->
-        <h2>Post a New Question</h2>
-        <div class="question-form">
-            <form action="/qa" method="POST">
-                <textarea name="question_text" placeholder="Enter your question here..." required></textarea>
-                <button type="submit">Post Question</button>
-            </form>
-        </div>
-
-        <!-- Display All Questions with Replies -->
-        <h2>Questions</h2>
-        {% for question_id, question in questions.items() %}
-            <div class="question">
-                <p class="question-title">{{ question.question_text }}</p>
-                <p class="timestamp">Asked on {{ question.created_at }}</p>
-
-                <!-- List of Replies for this Question -->
-                <div class="replies">
-                    {% for reply in question.replies %}
-                        <div class="reply">
-                            <p>{{ reply.reply_text }}</p>
-                            <p class="timestamp">Replied on {{ reply.created_at }}</p>
-                        </div>
-                    {% endfor %}
-                </div>
-
-                <!-- Form to Post a Reply to this Question -->
-                <div class="reply-form">
-                    <form action="/qa" method="POST">
-                        <input type="hidden" name="question_id" value="{{ question_id }}">
-                        <textarea name="reply_text" placeholder="Enter your reply here..." required></textarea>
-                        <button type="submit">Post Reply</button>
-                    </form>
+        <h2>Existing Questions</h2>
+        <div id="questions">
+            {% for question in questions.values() %}
+            <div class="question-box" data-question-id="{{ question.id }}">
+                <h3>{{ question.question_text }}</h3>
+                <p>Asked by: {{ question.email_address }}</p>
+                <div class="reply-box">
+                    <h4>Replies:</h4>
+                    <div id="reply-list-{{ question.id }}">
+                        {% for reply in question.replies %}
+                        <p>{{ reply.answer }}<br><small>{{ reply.time }}</small></p>
+                        {% else %}
+                        <p>No replies yet.</p>
+                        {% endfor %}
+                    </div>
+                    <textarea id="reply-text-{{ question.id }}" placeholder="Write a reply..."></textarea>
+                    <button data-question-id="{{ question.id }}" onclick="submitReply(this)">Post Reply</button>
                 </div>
             </div>
-        {% endfor %}
+            {% endfor %}
+        </div>
     </div>
+
+    <script>
+        function submitReply(button) {
+            const questionId = button.getAttribute("data-question-id");
+            const replyText = document.getElementById('reply-text-' + questionId).value;
+
+            if (!replyText.trim()) {
+                alert('Please enter a reply.');
+                return;
+            }
+
+            const data = { question_id: questionId, answer: replyText };
+
+            fetch('/qa', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message === 'success') {
+                    const replyList = document.getElementById('reply-list-' + questionId);
+                    const newReply = document.createElement('p');
+                    newReply.innerHTML = `${replyText}<br><small>${data.time}</small>`;
+                    replyList.appendChild(newReply);
+                    document.getElementById('reply-text-' + questionId).value = '';
+                } else {
+                    alert('Failed to post reply.');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        document.getElementById('questionForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+
+            fetch('/qa', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message === 'success') {
+                    const questionList = document.getElementById('questions');
+                    const newQuestion = document.createElement('div');
+                    newQuestion.classList.add('question-box');
+                    newQuestion.setAttribute('data-question-id', data.question_id);
+                    newQuestion.innerHTML = `
+                        <h3>${data.question_text}</h3>
+                        <p>Asked by: ${data.email_address}</p>
+                        <div class="reply-box">
+                            <h4>Replies:</h4>
+                            <div id="reply-list-${data.question_id}">
+                                <p>No replies yet.</p>
+                            </div>
+                            <textarea id="reply-text-${data.question_id}" placeholder="Write a reply..."></textarea>
+                            <button data-question-id="${data.question_id}" onclick="submitReply(this)">Post Reply</button>
+                        </div>
+                    `;
+                    questionList.appendChild(newQuestion);
+                    this.reset();
+                } else {
+                    alert('Failed to post question.');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    </script>
 </body>
 </html>
